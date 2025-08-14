@@ -13,6 +13,8 @@ Sistema completo de autenticación con registro, login y rutas protegidas.
 - Dashboard protegido  
 - Gestión de usuarios aprobados/no aprobados  
 - Login con cuenta de Google (OAuth)  
+- Menú unificado: Todas las opciones de navegación ahora disponibles en el menú hamburguesa
+- Nueva calculadora de interés compuesto
 
 ---
 
@@ -26,6 +28,8 @@ Sistema completo de autenticación con registro, login y rutas protegidas.
 | CSS Modules            | PostgreSQL           |
 | Google OAuth           | Bcrypt, dotenv       |
 | React Icons            |                      |
+| React Recharts         |                      |
+
 
 ---
 
@@ -155,6 +159,11 @@ backup_total_20250807_2130.tar.gz
 - Mensajes de error descriptivos  
 - Indicadores de carga (loading states)  
 
+✅ **Calculadora de Interés Compuesto**  
+- Cálculo con capital inicial y aportes periódicos  
+- Proyección con ajuste por inflación  
+- Visualización gráfica de resultados  
+
 ---
 
 ## 🛠️ Desarrollo Local  
@@ -177,9 +186,8 @@ npm run dev
 
 ## 📝 Próximas Mejoras
 
-- Panel de administración  
-- Recuperación de contraseña  
 - Tests E2E con Cypress  
+- Calculadora de amortizaciones  
 
 ---
 
