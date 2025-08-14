@@ -48,6 +48,12 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+.menuDivider {
+  height: 1px;
+  background-color: var(--color-input-border);
+  margin: 8px 12px;
+}
+
 .themeToggle {
   background: none;
   border: none;

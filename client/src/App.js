@@ -1,6 +1,8 @@
+//Importaciones
 import { useContext, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
+//Componenetes
 import Login from './components/Login';
 import WelcomePage from './components/WelcomePage';
 import Register from './components/Register';
@@ -8,6 +10,7 @@ import Dashboard from './components/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import ResetPassword from './components/ResetPassword';
 import NewPassword from './components/NewPassword';
+//Estilos
 import ThemeMenu from './components/ThemeMenu';
 import './index.css';
 

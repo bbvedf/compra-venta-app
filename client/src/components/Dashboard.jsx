@@ -1,20 +1,34 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './Dashboard.module.css';
 import { API_BASE_URL } from '../config';
 import ThemeMenu from './ThemeMenu';
+import CompoundInterestCalculator from './CompoundInterestCalculator';
 
 
 function Dashboard() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('inicio');
+  const location = useLocation(); // Obtiene el objeto location
+  
+  // Estado inicial con el valor de location.state o por defecto 'inicio'
+  const [activeTab, setActiveTab] = useState(
+    location.state?.activeTab || 'inicio'
+  );
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
   });
+
+  // Efecto para actualizar cuando cambia el estado de navegación
+  useEffect(() => {
+    if (location.state?.activeTab && location.state.activeTab !== activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]); // Se ejecuta cuando location.state cambia
 
   useEffect(() => {
     document.body.classList.remove('theme-light', 'theme-dark');
@@ -22,15 +36,18 @@ function Dashboard() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    } else if (!user.isApproved) {
-      if (window.location.pathname !== '/welcome') {
-        navigate('/welcome', { state: { email: user.email } });
-      }
-    }
-  }, [user, navigate]);
+useEffect(() => {
+  if (!user) {
+    navigate('/login');
+  } else if (!user.isApproved && window.location.pathname !== '/welcome') {
+    navigate('/welcome', { 
+      state: { 
+        email: user.email,
+        activeTab: location.state?.activeTab // Preserva el tab activo
+      } 
+    });
+  }
+}, [user, navigate]);
 
   useEffect(() => {
     if (activeTab === 'configuracion' && user?.role === 'admin') {
@@ -118,7 +135,7 @@ function Dashboard() {
         <ThemeMenu
           theme={theme}
           setTheme={setTheme}
-          onLogout={logout} // Pasamos la función logout como prop
+          onLogout={logout}
         />
         {showDeleteModal && (
           <div className={styles.modalOverlay}>
@@ -136,7 +153,7 @@ function Dashboard() {
                   Cancelar
                 </button>
                 <button
-                  onClick={confirmDelete} // Cambia de handleDeleteClick(user) a confirmDelete
+                  onClick={confirmDelete}
                   className={styles.deleteButton}
                 >
                   Eliminar
@@ -147,96 +164,87 @@ function Dashboard() {
         )}
       </div>
 
-      <nav className={styles.navTabs}>
-        <button
-          className={`${styles.tabButton} ${activeTab === 'inicio' ? styles.active : ''}`}
-          onClick={() => setActiveTab('inicio')}
-        >
-          Inicio
-        </button>
-        {user?.role === 'admin' && (
-          <button
-            className={`${styles.tabButton} ${activeTab === 'configuracion' ? styles.active : ''}`}
-            onClick={() => setActiveTab('configuracion')}
-          >
-            Configuración
-          </button>
-        )}
-      </nav>
+      
 
       <div className={styles.tabContent}>
-        {activeTab === 'inicio' ? (
-          <div className={styles.welcomeSection}>
-            <h3>Bienvenido, {user?.name || user?.email}</h3>
-            <div className={styles.userInfo}>
-              <p><strong>Email:</strong> {user?.email}</p>
-              <p><strong>Rol:</strong> {user?.role}</p>
-              <p><strong>Aprobado:</strong> {user?.isApproved ? 'Verificado' : 'Pendiente'}</p>
-            </div>
-          </div>
-        ) : (
-          <div className={styles.adminPanel}>
-            {loading ? (
-              <p>Cargando usuarios...</p>
-            ) : (
-              <>
-                <h3>Gestión de Usuarios</h3>
-                <div className={styles.userTableContainer}>
-                  <table className={styles.userTable}>
-                    <thead>
-                      <tr>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Aprobado</th>
-                        <th>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users.map((user) => (
-                        <tr key={user.id}>
-                          <td>{user.email}</td>
-                          <td>
-                            <div className={styles.roleSelectContainer}>
-                              <select
-                                value={user.role}
-                                onChange={(e) => handleUserAction('update', user.id, { role: e.target.value })}
-                                className={styles.roleSelect}
-                              >
-                                <option value="admin">Admin</option>
-                                <option value="basic">Básico</option>
-                              </select>
-                            </div>
-                          </td>
-                          <td>
-                            <label className={styles.switch}>
-                              <input
-                                type="checkbox"
-                                checked={user.isApproved || false}
-                                onChange={(e) => handleUserAction('update', user.id, {
-                                  isApproved: e.target.checked,
-                                  role: user.role || 'basic'  // <-- Asegura que siempre se envía un rol
-                                })}
-                              />
-                              <span className={styles.slider}></span>
-                            </label>
-                          </td>
-                          <td>
-                            <button
-                              onClick={() => handleDeleteClick(user)}
-                              className={styles.deleteButton}
-                            >
-                              Eliminar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+        {
+          {
+            'inicio': (
+              <div className={styles.welcomeSection}>
+                <h3>Bienvenido, {user?.name || user?.email}</h3>
+                <div className={styles.userInfo}>
+                  <p><strong>Email:</strong> {user?.email}</p>
+                  <p><strong>Rol:</strong> {user?.role}</p>
+                  <p><strong>Aprobado:</strong> {user?.isApproved ? 'Verificado' : 'Pendiente'}</p>
                 </div>
-              </>
-            )}
-          </div>
-        )}
+              </div>
+            ),
+            'configuracion': (
+              <div className={styles.adminPanel}>
+                {loading ? (
+                  <p>Cargando usuarios...</p>
+                ) : (
+                  <>
+                    <h3>Gestión de Usuarios</h3>
+                    <div className={styles.userTableContainer}>
+                      <table className={styles.userTable}>
+                        <thead>
+                          <tr>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Aprobado</th>
+                            <th>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {users.map((user) => (
+                            <tr key={user.id}>
+                              <td>{user.email}</td>
+                              <td>
+                                <div className={styles.roleSelectContainer}>
+                                  <select
+                                    value={user.role}
+                                    onChange={(e) => handleUserAction('update', user.id, { role: e.target.value })}
+                                    className={styles.roleSelect}
+                                  >
+                                    <option value="admin">Admin</option>
+                                    <option value="basic">Básico</option>
+                                  </select>
+                                </div>
+                              </td>
+                              <td>
+                                <label className={styles.switch}>
+                                  <input
+                                    type="checkbox"
+                                    checked={user.isApproved || false}
+                                    onChange={(e) => handleUserAction('update', user.id, {
+                                      isApproved: e.target.checked,
+                                      role: user.role || 'basic'
+                                    })}
+                                  />
+                                  <span className={styles.slider}></span>
+                                </label>
+                              </td>
+                              <td>
+                                <button
+                                  onClick={() => handleDeleteClick(user)}
+                                  className={styles.deleteButton}
+                                >
+                                  Eliminar
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </div>
+            ),
+            'calculadora': <CompoundInterestCalculator />
+          }[activeTab]
+        }
       </div>
     </div>
   );
