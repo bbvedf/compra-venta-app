@@ -1,8 +1,15 @@
 # 🛒 Compra-Venta App - Sistema de Autenticación  
+
+## 🛠 Stack Tecnológico  
 ![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)  
 ![Node.js](https://img.shields.io/badge/Node.js-16+-339933?logo=node.js)  
-![JWT](https://img.shields.io/badge/JWT-Authentication-000000?logo=json-web-tokens)  
-![React Icons](https://img.shields.io/badge/React_Icons-5.5.0-F7DF1E?logo=react&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white)  
+![JWT](https://img.shields.io/badge/JWT-Auth-000000?logo=json-web-tokens)  
+![React Router](https://img.shields.io/badge/React_Router-6.x-CA4245?logo=react-router&logoColor=white)  
+![Recharts](https://img.shields.io/badge/Recharts-3.x-FF6384?logo=chart.js&logoColor=white)  
+![Docker](https://img.shields.io/badge/Docker-✓-2496ED?logo=docker&logoColor=white)  
+![React Icons](https://img.shields.io/badge/React_Icons-5.5.0-F7DF1E?logo=react)  
+
 
 ## 📌 Descripción  
 Sistema completo de autenticación con registro, login y rutas protegidas.  
