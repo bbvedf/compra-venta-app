@@ -13,6 +13,8 @@ import NewPassword from './components/NewPassword';
 //Estilos
 import ThemeMenu from './components/ThemeMenu';
 import './index.css';
+import { Toaster } from 'react-hot-toast';
+
 
 function App() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -27,7 +29,7 @@ function App() {
   return (
     <>
       <ThemeMenu theme={theme} setTheme={setTheme} />
-      
+      <Toaster position="top-center" reverseOrder={false} />
       <Routes>
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/login" element={!isLoggedIn ? <Login /> : <Navigate to="/dashboard" />} />

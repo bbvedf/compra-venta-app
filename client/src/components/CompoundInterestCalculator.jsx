@@ -1,4 +1,10 @@
-import React, { useState } from "react";
+import { useRef, useState } from 'react';
+import html2pdf from 'html2pdf.js';
+import ExcelJS from 'exceljs';
+import { toPng } from 'html-to-image';
+import toast from 'react-hot-toast';
+import { FaRegFilePdf, FaRegFileExcel } from 'react-icons/fa6';
+import { MdOutlineAttachEmail } from 'react-icons/md';
 import {
     LineChart,
     Line,
@@ -12,20 +18,230 @@ import {
 import styles from './CompoundInterestCalculator.module.css';
 
 const CompoundInterestCalculator = () => {
+    const pdfRef = useRef();
+
+    const handleExportPDF = () => {
+        const element = pdfRef.current;
+        const opt = {
+            margin: 0.5,
+            filename: `interes-compuesto-${new Date().toISOString().slice(0, 10)}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().from(element).set(opt).save();
+    };
+
+    const chartRef = useRef(); // Referencia al contenedor del gráfico
+
+    const handleExportExcel = async () => {
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet('Reporte Interés Compuesto');
+
+        const sectionTitleStyle = {
+            font: { bold: true, size: 14, color: { argb: 'FFFFFFFF' } },
+            alignment: { horizontal: 'center' },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } },
+        };
+
+        let rowIndex = 1;
+
+        // --- Inputs ---
+        ws.mergeCells(`A${rowIndex}:B${rowIndex}`);
+        ws.getCell(`A${rowIndex}`).value = 'Datos de entrada';
+        ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
+        rowIndex++;
+
+        const inputData = [
+            ['Capital inicial (€)', capital],
+            ['Tasa anual (%)', rate],
+            ['Período (años)', years],
+            ['Frecuencia de capitalización', frequency === 1 ? 'Anual' : 'Mensual'],
+            ['Aporte periódico (€)', periodic],
+            ['Inflación estimada (%)', inflation],
+        ];
+
+        inputData.forEach(([label, value]) => {
+            ws.getCell(`A${rowIndex}`).value = label;
+            ws.getCell(`B${rowIndex}`).value = value;
+            ws.getCell(`A${rowIndex}`).alignment = { vertical: 'middle', horizontal: 'left' };
+            ws.getCell(`B${rowIndex}`).alignment = { vertical: 'middle', horizontal: 'left' };
+            rowIndex++;
+        });
+
+        rowIndex++; // espacio
+
+        // --- Resultados ---
+        ws.mergeCells(`A${rowIndex}:B${rowIndex}`);
+        ws.getCell(`A${rowIndex}`).value = 'Resultados';
+        ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
+        rowIndex++;
+
+        const resultsData = [
+            ['Valor Final (€)', results.finalValue],
+            ['Ganancia Neta (€)', results.netGain],
+            ['Valor Real (€)', results.realValue],
+        ];
+
+        resultsData.forEach(([label, value]) => {
+            ws.getCell(`A${rowIndex}`).value = label;
+            ws.getCell(`B${rowIndex}`).value = parseFloat(value.toFixed(2));
+            ws.getCell(`A${rowIndex}`).alignment = { horizontal: 'left' };
+            ws.getCell(`B${rowIndex}`).alignment = { horizontal: 'left' };
+            rowIndex++;
+        });
+
+        rowIndex++; // espacio
+
+        // --- Tabla de evolución ---
+        ws.mergeCells(`A${rowIndex}:E${rowIndex}`);
+        ws.getCell(`A${rowIndex}`).value = 'Evolución anual';
+        ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
+        rowIndex++;
+
+        const headers = ['Año', 'Balance', 'Intereses', 'Aportes', 'Valor real'];
+        headers.forEach((header, i) => {
+            const cell = ws.getCell(rowIndex, i + 1);
+            cell.value = header;
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } };
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.alignment = { horizontal: 'center' };
+        });
+        rowIndex++;
+
+        tableData.forEach((row, idx) => {
+            const fillColor = idx % 2 === 0 ? 'FFDCE6F1' : 'FFFFFFFF';
+            const values = [row.year, row.balance, row.interest, row.periodic, row.realBalance];
+            values.forEach((v, i) => {
+                const cell = ws.getCell(rowIndex, i + 1);
+                cell.value = v;
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+                cell.alignment = { horizontal: 'center' };
+            });
+            rowIndex++;
+        });
+
+        rowIndex++; // espacio antes del gráfico
+
+        // --- Gráfico ---
+        ws.mergeCells(`A${rowIndex}:E${rowIndex}`);
+        ws.getCell(`A${rowIndex}`).value = 'Gráfico de evolución';
+        ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
+        rowIndex++;
+
+        try {
+            const chartNode = document.querySelector('.recharts-wrapper');
+            if (chartNode) {
+                const dataUrl = await toPng(chartNode, { backgroundColor: '#ffffff' });
+                const imageId = wb.addImage({
+                    base64: dataUrl,
+                    extension: 'png',
+                });
+                ws.addImage(imageId, `A${rowIndex}:E${rowIndex + 15}`);
+            }
+        } catch (err) {
+            console.error('Error generando gráfico:', err);
+        }
+
+        ws.columns.forEach(col => {
+            col.width = 18;
+        });
+
+        wb.xlsx.writeBuffer().then(buffer => {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `reporte-interes-${new Date().toISOString().slice(0, 10)}.xlsx`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+    };
+
+    const handleSendEmail = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                toast.error('No estás logado. Por favor, inicia sesión.');
+                return;
+            }
+
+            // --- Prepara tabla ---
+            const tablePayload = tableData.map(row => ({
+                year: row.year,
+                balance: row.balance,
+                interest: row.interest,
+                periodic: row.periodic,
+                realBalance: row.realBalance,
+            }));
+
+            const payload = {
+                capital,
+                rate,
+                years,
+                periodic,
+                inflation,
+                finalValue: results.finalValue,
+                netGain: results.netGain,
+                realValue: results.realValue,
+                tableData: tablePayload,
+            };
+
+            // --- Genera data URL del gráfico si existe ---
+            if (chartRef.current) {
+                try {
+                    const dataUrl = await toPng(chartRef.current, { 
+                        backgroundColor: '#ffffff',
+                        skipFonts: true,
+                        style: { fontFamily: 'Arial, sans-serif' } 
+                    });
+                    console.log('PNG size before send:', dataUrl.length);
+                    payload.chartDataUrl = dataUrl;
+                } catch (err) {
+                    console.error('Error generando data URL del gráfico:', err);
+                }
+            }
+
+            // --- Llamada al backend ---
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-calculation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                toast.success('Correo enviado correctamente');
+            } else {
+                toast.error(data.message || 'Error enviando el correo');
+            }
+
+        } catch (err) {
+            console.error('Error enviando el correo:', err);
+            toast.error('Error enviando el correo. Revisa la consola.');
+        }
+    };
+
     const [capital, setCapital] = useState(1000);
     const [rate, setRate] = useState(5);
     const [years, setYears] = useState(10);
-    const [frequency, setFrequency] = useState(1); // 1 = anual
-    const [periodic, setPeriodic] = useState(0);
-    const [inflation, setInflation] = useState(0);
+    const [frequency, setFrequency] = useState(1);
+    const [periodic, setPeriodic] = useState('');
+    const [inflation, setInflation] = useState('');
+    const periodicValue = periodic === '' ? 0 : +periodic;
+    const inflationValue = inflation === '' ? 0 : +inflation;
 
     const [results, setResults] = useState(null);
     const [tableData, setTableData] = useState([]);
 
     const calculate = () => {
-        const r = rate / 100;           // tasa anual
-        const infl = inflation / 100;   // inflación anual
-        const n = frequency;            // 1 = anual, 12 = mensual
+        const r = rate / 100;
+        const infl = inflationValue / 100;
+        const n = frequency;
         const totalPeriods = years * n;
 
         let balance = capital;
@@ -33,8 +249,7 @@ const CompoundInterestCalculator = () => {
 
         for (let t = 1; t <= totalPeriods; t++) {
             const interest = balance * (r / n);
-            balance += interest + (periodic / n); // aporte proporcional si mensual
-            // Solo agregamos la fila al final de cada año para la tabla
+            balance += interest + (periodicValue / n);
             if (t % n === 0) {
                 const yearNumber = t / n;
                 const realBalance = balance / Math.pow(1 + infl, yearNumber);
@@ -42,159 +257,175 @@ const CompoundInterestCalculator = () => {
                 table.push({
                     year: yearNumber,
                     balance: parseFloat(balance.toFixed(2)),
-                    interest: parseFloat((balance - capital - (periodic * yearNumber)).toFixed(2)),
-                    periodic: parseFloat((periodic * yearNumber).toFixed(2)),
+                    interest: parseFloat((balance - capital - (periodicValue * yearNumber)).toFixed(2)),
+                    periodic: parseFloat((periodicValue * yearNumber).toFixed(2)),
                     realBalance: parseFloat(realBalance.toFixed(2)),
                 });
             }
         }
 
-        const lastRow = table[table.length - 1];
+        // --- Actualiza estados ---
+        const finalValue = parseFloat(balance.toFixed(2));
+        const netGain = parseFloat((finalValue - capital - periodicValue * years).toFixed(2));
+        const realValue = parseFloat((finalValue / Math.pow(1 + infl, years)).toFixed(2));
 
-        setResults({
-            finalValue: lastRow.balance,
-            netGain: lastRow.balance - capital,
-            realValue: lastRow.realBalance,
-        });
-
+        setResults({ finalValue, netGain, realValue });
         setTableData(table);
     };
 
+    return (
+        <div className={styles.container}>
+            {/* Sección que irá al PDF */}
+            <div ref={pdfRef}>
+                <h2 className={styles.title}>Calculadora de Interés Compuesto</h2>
 
+                <div className={styles.inputGrid}>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>Capital inicial (€)</label>
+                        <input
+                            type="number"
+                            value={capital}
+                            onChange={e => setCapital(+e.target.value)}
+                            className={styles.input}
+                        />
+                    </div>
 
-return (
-    <div className={styles.container}>
-      <h2 className={styles.title}>Calculadora de Interés Compuesto</h2>
-      
-      <div className={styles.inputGrid}>
-        {/* Grupo 1: Capital y Tasa */}
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Capital inicial (€)</label>
-          <input 
-            type="number" 
-            value={capital} 
-            onChange={e => setCapital(+e.target.value)}
-            className={styles.input}
-          />
-        </div>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>Tasa anual (%)</label>
+                        <input
+                            type="number"
+                            value={rate}
+                            onChange={e => setRate(+e.target.value)}
+                            className={styles.input}
+                        />
+                    </div>
 
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Tasa anual (%)</label>
-          <input 
-            type="number" 
-            value={rate} 
-            onChange={e => setRate(+e.target.value)}
-            className={styles.input}
-          />
-        </div>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>Período (años)</label>
+                        <input
+                            type="number"
+                            value={years}
+                            onChange={e => setYears(+e.target.value)}
+                            className={styles.input}
+                        />
+                    </div>
 
-        {/* Grupo 2: Años y Frecuencia */}
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Período (años)</label>
-          <input 
-            type="number" 
-            value={years} 
-            onChange={e => setYears(+e.target.value)}
-            className={styles.input}
-          />
-        </div>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>Frecuencia de capitalización</label>
+                        <select
+                            value={frequency}
+                            onChange={e => setFrequency(Number(e.target.value))}
+                            className={styles.select}
+                        >
+                            <option value={1}>Anual</option>
+                            <option value={12}>Mensual</option>
+                        </select>
+                        <small className={styles.helperText}>
+                            {frequency === 1
+                                ? "Los intereses se calculan anualmente"
+                                : "Los intereses se calculan mensualmente"}
+                        </small>
+                    </div>
 
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Frecuencia de capitalización</label>
-          <select
-            value={frequency}
-            onChange={e => setFrequency(Number(e.target.value))}
-            className={styles.select}
-          >
-            <option value={1}>Anual</option>
-            <option value={12}>Mensual</option>
-          </select>
-          <small className={styles.helperText}>
-            {frequency === 1
-              ? "Los intereses se calculan anualmente"
-              : "Los intereses se calculan mensualmente"}
-          </small>
-        </div>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>Aporte periódico (€)</label>
+                        <input
+                            type="number"
+                            placeholder="0"
+                            value={periodic}
+                            onChange={e => setPeriodic(e.target.value)}
+                            className={styles.input}
+                        />
+                    </div>
 
-        {/* Grupo 3: Aportes e Inflación */}
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Aporte periódico (€)</label>
-          <input 
-            type="number" 
-            value={periodic} 
-            onChange={e => setPeriodic(+e.target.value)}
-            className={styles.input}
-          />
-        </div>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.label}>Inflación estimada (%)</label>
+                        <input
+                            type="number"
+                            placeholder="0"
+                            value={inflation}
+                            onChange={e => setInflation(e.target.value)}
+                            className={styles.input}
+                        />
+                    </div>
+                </div>
 
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Inflación estimada (%)</label>
-          <input 
-            type="number" 
-            value={inflation} 
-            onChange={e => setInflation(+e.target.value)}
-            className={styles.input}
-          />
-        </div>
-      </div>
+                <button onClick={calculate} className={styles.calculateButton}>
+                    Calcular
+                </button>
 
-      <button 
-        onClick={calculate} 
-        className={styles.calculateButton}
-      >
-        Calcular
-      </button>
+                {results && (
+                    <div style={{ marginTop: "20px" }}>
+                        <h3>Resultados</h3>
+                        <p>Valor Final: €{results.finalValue.toFixed(2)}</p>
+                        <p>Ganancia neta: €{results.netGain.toFixed(2)}</p>
+                        <p>Valor real (aj. inflación): €{results.realValue.toFixed(2)}</p>
+                    </div>
+                )}
 
-            {results && (
-                <div style={{ marginTop: "20px" }}>
-                    <h3>Resultados</h3>
-                    <p>Valor Final: €{results.finalValue.toFixed(2)}</p>
-                    <p>Ganancia neta: €{results.netGain.toFixed(2)}</p>
-                    <p>Valor real (aj. inflación): €{results.realValue.toFixed(2)}</p>
+                {tableData.length > 0 && (
+                    <>
+                        <h3>Resumen Anual</h3>
+                        <table border="1" cellPadding="5" style={{ borderCollapse: "collapse", width: "100%" }}>
+                            <thead>
+                                <tr>
+                                    <th>Año</th>
+                                    <th>Balance</th>
+                                    <th>Intereses</th>
+                                    <th>Aportes</th>
+                                    <th>Valor real</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tableData.map(row => (
+                                    <tr key={row.year}>
+                                        <td>{row.year}</td>
+                                        <td>{row.balance}</td>
+                                        <td>{row.interest}</td>
+                                        <td>{row.periodic}</td>
+                                        <td>{row.realBalance}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <h3>Gráfico</h3>
+                        <div ref={chartRef}>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={tableData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="year" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="balance" stroke="#8884d8" name="Balance" />
+                                    <Line type="monotone" dataKey="realBalance" stroke="#82ca9d" name="Valor real" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Botones de exportación fuera del PDF */}
+            {tableData.length > 0 && (
+                <div className={styles.exportButtonsContainer}>
+                    <button onClick={handleExportPDF} className={`${styles.exportButton} ${styles.pdfButton}`}>
+                        <FaRegFilePdf className={styles.buttonIcon} /> Exportar PDF
+                    </button>
+
+                    <button onClick={handleExportExcel} className={`${styles.exportButton} ${styles.excelButton}`}>
+                        <FaRegFileExcel className={styles.buttonIcon} /> Exportar Excel
+                    </button>
+
+                    <button onClick={handleSendEmail} className={`${styles.exportButton} ${styles.emailButton}`}>
+                        <MdOutlineAttachEmail className={styles.buttonIcon} /> Enviar por Email
+                    </button>
                 </div>
             )}
-
-            {tableData.length > 0 && (
-                <>
-                    <h3>Resumen Anual</h3>
-                    <table border="1" cellPadding="5" style={{ borderCollapse: "collapse", width: "100%" }}>
-                        <thead>
-                            <tr>
-                                <th>Año</th>
-                                <th>Balance</th>
-                                <th>Intereses</th>
-                                <th>Aportes</th>
-                                <th>Valor real</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tableData.map(row => (
-                                <tr key={row.year}>
-                                    <td>{row.year}</td>
-                                    <td>{row.balance}</td>
-                                    <td>{row.interest}</td>
-                                    <td>{row.periodic}</td>
-                                    <td>{row.realBalance}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    <h3>Gráfico</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={tableData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="year" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="balance" stroke="#8884d8" name="Balance" />
-                            <Line type="monotone" dataKey="realBalance" stroke="#82ca9d" name="Valor real" />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </>
-            )}
         </div>
+
+
     );
 };
 

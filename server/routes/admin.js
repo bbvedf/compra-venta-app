@@ -3,7 +3,7 @@ const { Router } = express;
 const router = Router();
 const pool = require('../db');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
-const { sendUserApprovedEmail, sendUserRejectedEmail } = require('../utils/emailSender');
+const { sendUserApprovedEmail, sendUserRejectedEmail, sendCalculationEmail } = require('../utils/emailSender');
 
 
 /**
@@ -118,5 +118,29 @@ router.delete('/users/:id', verifyToken, isAdmin, async (req, res) => {
         });
     }
 });
+
+
+router.post('/send-calculation', verifyToken, isAdmin, async (req, res) => {
+    try {
+        const userEmail = req.user.email;
+        const calculationData = req.body;
+
+        console.log('req.user:', req.user);
+        console.log('req.body:', req.body);
+
+        console.log('Body keys:', Object.keys(req.body));
+        console.log('chartDataUrl length at route:', req.body.chartDataUrl ? req.body.chartDataUrl.length : 'no data');
+
+
+        await sendCalculationEmail(userEmail, calculationData, req.body.chartDataUrl);
+
+        res.json({ message: 'Correo enviado correctamente' });
+    } catch (err) {
+        console.error('Error enviando correo de cálculo:', err);
+        res.status(500).json({ message: 'Error enviando el correo' });
+    }
+});
+
+
 
 module.exports = router;

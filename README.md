@@ -170,6 +170,7 @@ backup_total_20250807_2130.tar.gz
 - Cálculo con capital inicial y aportes periódicos  
 - Proyección con ajuste por inflación  
 - Visualización gráfica de resultados  
+- Exports a pdf, excel y/o correo  
 
 ---
 
