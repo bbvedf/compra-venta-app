@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
 import { toPng } from 'html-to-image';
 import styles from './MortgageCalculator.module.css';
 import { FiArrowUp, FiArrowDown } from 'react-icons/fi';
@@ -9,26 +8,16 @@ import toast from 'react-hot-toast';
 import { FaRegFilePdf, FaRegFileExcel } from 'react-icons/fa6';
 import { MdOutlineAttachEmail } from 'react-icons/md';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
+    ResponsiveContainer,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
     Tooltip,
-    Legend
-} from 'chart.js';
+    Legend,
+    CartesianGrid,
+} from "recharts";
 
-// Registrar explícitamente los elementos y escalas de Chart.js
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
 
 const MortgageCalculator = () => {
     const [principal, setPrincipal] = useState('');
@@ -80,7 +69,15 @@ const MortgageCalculator = () => {
 
         setAmortizationTable(table);
 
-        // Generar gráfico
+        // Generar gráfico para Recharts
+        const mortgageData = table.map(row => ({
+            month: row.period,
+            principal: row.principalPayment,
+            interest: row.interestPayment,
+            balance: row.balance,
+        }));
+
+        // Captura del gráfico como imagen
         setTimeout(async () => {
             if (chartRef.current) {
                 try {
@@ -91,70 +88,59 @@ const MortgageCalculator = () => {
                 }
             }
         }, 0);
-    };
 
-    const chartData = {
-        labels: amortizationTable.map(row => row.period),
-        datasets: [
-            {
-                label: 'Saldo pendiente',
-                data: amortizationTable.map(row => row.balance),
-                fill: false,
-                backgroundColor: '#82ca9d',
-                borderColor: '#82ca9d',
-            },
-        ],
+        return mortgageData; // para usarlo en el render
     };
 
     //Referencia para exportar a PDF
     const pdfRef = useRef();
 
     const handleExportPDF = () => {
-    if (!pdfRef.current) return;
+        if (!pdfRef.current) return;
 
-    const body = document.body;
-    const wasDark = body.classList.contains("theme-dark");
+        const body = document.body;
+        const wasDark = body.classList.contains("theme-dark");
 
-    // Overlay que tapa todo
-    const overlay = document.createElement("div");
-    overlay.style.position = "fixed";
-    overlay.style.top = 0;
-    overlay.style.left = 0;
-    overlay.style.width = "100vw";
-    overlay.style.height = "100vh";
-    overlay.style.background = wasDark ? "#1e1e2f" : "#fff";
-    overlay.style.zIndex = 9999;
-    document.body.appendChild(overlay);
+        // Overlay que tapa todo
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.top = 0;
+        overlay.style.left = 0;
+        overlay.style.width = "100vw";
+        overlay.style.height = "100vh";
+        overlay.style.background = wasDark ? "#1e1e2f" : "#fff";
+        overlay.style.zIndex = 9999;
+        document.body.appendChild(overlay);
 
-    // Forzamos tema light temporal
-    body.classList.remove("theme-dark");
-    body.classList.add("theme-light");
+        // Forzamos tema light temporal
+        body.classList.remove("theme-dark");
+        body.classList.add("theme-light");
 
-    const clone = pdfRef.current.cloneNode(true);
-    document.body.appendChild(clone);
-    
-    html2pdf()
-        .set({
-            margin: 0.5,
-            filename: `reporte-hipoteca-${new Date().toISOString().slice(0, 10)}.pdf`,
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-        })
-        .from(clone)
-        .save()
-        .then(() => {
-            body.classList.remove("theme-light");
-            if (wasDark) body.classList.add("theme-dark");
-            document.body.removeChild(clone);
-            document.body.removeChild(overlay);
-        });
-};
+        const clone = pdfRef.current.cloneNode(true);
+        document.body.appendChild(clone);
 
-
+        html2pdf()
+            .set({
+                margin: 0.5,
+                filename: `reporte-hipoteca-${new Date().toISOString().slice(0, 10)}.pdf`,
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+            })
+            .from(clone)
+            .save()
+            .then(() => {
+                body.classList.remove("theme-light");
+                if (wasDark) body.classList.add("theme-dark");
+                document.body.removeChild(clone);
+                document.body.removeChild(overlay);
+            });
+    };
 
 
 
-    const handleExportExcelHipoteca = () => {
+
+
+    const handleExportExcel = async () => {
         const wb = new ExcelJS.Workbook();
         const ws = wb.addWorksheet('Reporte Hipoteca');
 
@@ -258,17 +244,28 @@ const MortgageCalculator = () => {
         ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
         rowIndex++;
 
-        if (chartDataUrl) {
-            const imageId = wb.addImage({
-                base64: chartDataUrl,
-                extension: 'png',
-            });
-            ws.addImage(imageId, `A${rowIndex}:E${rowIndex + 15}`);
+        // Generamos el PNG justo aquí
+        if (chartRef.current) {
+            try {
+                const dataUrl = await toPng(chartRef.current, { backgroundColor: '#ffffff' });
+                const imageId = wb.addImage({
+                    base64: dataUrl,
+                    extension: 'png',
+                });
+                // Ajustamos la altura para que la imagen no aparezca en blanco
+                const startRow = rowIndex;
+                const endRow = rowIndex + 14; // 14 filas de alto aprox.
+                ws.addImage(imageId, `A${startRow}:E${endRow}`);
+                rowIndex = endRow + 1;
+            } catch (err) {
+                console.error('Error generando PNG para Excel:', err);
+            }
         }
 
         ws.columns.forEach(col => {
             col.width = 18;
         });
+
 
         wb.xlsx.writeBuffer().then(buffer => {
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -294,25 +291,27 @@ const MortgageCalculator = () => {
                 return;
             }
 
-            // --- Prepara tabla ---
+            console.log(amortizationTable[0])
+
+            // --- Prepara tabla en el formato esperado por el backend/email ---
             const tablePayload = amortizationTable.map(row => ({
-                year: row.year,
-                balance: row.balance,
-                interest: row.interest,
-                periodic: row.periodic,
-                realBalance: row.realBalance,
+                period: row.period,
+                payment: row.payment.toFixed(2),
+                principalPayment: row.principalPayment.toFixed(2),
+                interestPayment: row.interestPayment.toFixed(2),
+                balance: row.balance.toFixed(2)
             }));
 
+            // --- Prepara payload ---
             const payload = {
-                capital,
-                rate,
+                principal,               // número
+                interestRate,            // número
                 years,
-                periodic,
-                inflation,
-                finalValue: results.finalValue,
-                netGain: results.netGain,
-                realValue: results.realValue,
-                table: tablePayload,
+                paymentsPerYear,
+                extraPayment,
+                extraPaymentFrequency,
+                monthlyPayment,
+                table: tablePayload,     // tabla en formato correcto
             };
 
             // --- Genera data URL del gráfico si existe ---
@@ -331,7 +330,7 @@ const MortgageCalculator = () => {
             }
 
             // --- Llamada al backend ---
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-calculation`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-mortgage`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -353,6 +352,7 @@ const MortgageCalculator = () => {
             toast.error('Error enviando el correo. Revisa la consola.');
         }
     };
+
 
 
     return (
@@ -455,37 +455,26 @@ const MortgageCalculator = () => {
                 {amortizationTable.length > 0 && (
                     <>
                         <h3>Gráfico</h3>
+
+                        {/* Gráfico */}
                         <div ref={chartRef} className={styles.chartContainer}>
-
-                            <Line
-                                data={{
-                                    labels: amortizationTable.map(row => row.period),
-                                    datasets: [
-                                        {
-                                            label: 'Saldo pendiente',
-                                            data: amortizationTable.map(row => row.balance),
-                                            borderColor: '#82ca9d',
-                                            backgroundColor: '#82ca9d',
-                                            tension: 0.3,
-                                            fill: true,
-                                            pointRadius: 2,
-                                        },
-                                    ],
-                                }}
-                                options={{
-                                    responsive: true,
-                                    plugins: {
-                                        legend: { position: 'top' },
-                                        title: { display: false },
-                                    },
-                                    scales: {
-                                        x: { title: { display: true, text: 'Período' } },
-                                        y: { title: { display: true, text: 'Saldo (€)' } },
-                                    },
-                                }}
-                            />
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={amortizationTable.map(row => ({
+                                    month: row.period,
+                                    principal: row.principalPayment,
+                                    interest: row.interestPayment,
+                                    balance: row.balance
+                                }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="month" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="principal" stroke="#82ca9d" />
+                                    <Line type="monotone" dataKey="interest" stroke="#8884d8" />
+                                </LineChart>
+                            </ResponsiveContainer>
                         </div>
-
 
 
                         <h3>Resumen anual</h3>
@@ -549,7 +538,7 @@ const MortgageCalculator = () => {
                             <FaRegFilePdf className={styles.buttonIcon} /> Exportar PDF
                         </button>
 
-                        <button onClick={handleExportExcelHipoteca} className={`${styles.exportButton} ${styles.excelButton}`}>
+                        <button onClick={handleExportExcel} className={`${styles.exportButton} ${styles.excelButton}`}>
                             <FaRegFileExcel className={styles.buttonIcon} /> Exportar Excel
                         </button>
 

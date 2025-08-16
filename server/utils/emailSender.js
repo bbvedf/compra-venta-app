@@ -174,8 +174,15 @@ exports.sendCalculationEmail = async (to, calculationData, chartDataUrl) => {
 
 exports.sendMortgageEmail = async (to, mortgageData) => {
   const {
-    principal, rate, years, paymentsPerYear,
-    tableData = [], chartDataUrl
+    principal,
+    interestRate,
+    years,
+    paymentsPerYear,
+    extraPayment,
+    extraPaymentFrequency,
+    monthlyPayment,
+    table = [],
+    chartDataUrl
   } = mortgageData;
 
   // Preparamos el adjunto si existe chartDataUrl
@@ -194,9 +201,11 @@ exports.sendMortgageEmail = async (to, mortgageData) => {
       <h2 style="background-color: #4F81BD; color: white; padding: 8px;">Datos de entrada</h2>
       <ul>
         <li>Principal: €${Number(principal)}</li>
-        <li>Tasa anual: ${Number(rate)}%</li>
+        <li>Tasa anual: ${Number(interestRate)}%</li>
         <li>Plazo: ${Number(years)} años</li>
         <li>Pagos por año: ${Number(paymentsPerYear)}</li>
+        ${extraPayment ? `<li>Pago extra: €${Number(extraPayment)} (${extraPaymentFrequency})</li>` : ''}
+        <li>Pago mensual estimado: €${Number(monthlyPayment).toFixed(2)}</li>
       </ul>
 
       <h2 style="background-color: #4F81BD; color: white; padding: 8px;">Amortización</h2>
@@ -211,7 +220,7 @@ exports.sendMortgageEmail = async (to, mortgageData) => {
           </tr>
         </thead>
         <tbody>
-          ${tableData.map((row, idx) => `
+          ${table.map((row, idx) => `
             <tr style="background-color: ${idx % 2 === 0 ? '#DCE6F1' : '#FFFFFF'}; text-align: center;">
               <td>${Number(row.period)}</td>
               <td>${Number(row.payment).toFixed(2)}</td>
