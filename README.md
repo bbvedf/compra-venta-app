@@ -22,6 +22,7 @@ Sistema completo de autenticación con registro, login y rutas protegidas.
 - Login con cuenta de Google (OAuth)  
 - Menú unificado: Todas las opciones de navegación ahora disponibles en el menú hamburguesa
 - Nueva calculadora de interés compuesto
+- Nueva calculadora de amortización hipotecaria
 
 ---
 
@@ -170,7 +171,13 @@ backup_total_20250807_2130.tar.gz
 - Cálculo con capital inicial y aportes periódicos  
 - Proyección con ajuste por inflación  
 - Visualización gráfica de resultados  
-- Exports a pdf, excel y/o correo  
+- Exports a PDF, Excel y/o envío por correo electrónico  
+
+✅ **Calculadora de Amortización**  
+- Cálculo de pagos periódicos y amortización de capital  
+- Generación de tabla de amortización completa  
+- Visualización gráfica del saldo y pagos  
+- Exports a PDF, Excel y/o envío por correo electrónico  
 
 ---
 
@@ -194,8 +201,8 @@ npm run dev
 
 ## 📝 Próximas Mejoras
 
-- Tests E2E con Cypress  
-- Calculadora de amortizaciones  
+- Tests E2E con Cypress
+- Registro de login/actividad   
 
 ---
 
