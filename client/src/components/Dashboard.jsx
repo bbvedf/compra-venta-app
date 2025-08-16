@@ -5,7 +5,7 @@ import styles from './Dashboard.module.css';
 import { API_BASE_URL } from '../config';
 import ThemeMenu from './ThemeMenu';
 import CompoundInterestCalculator from './CompoundInterestCalculator';
-
+import MortgageCalculator from './MortgageCalculator';
 
 function Dashboard() {
   const { user, logout } = useContext(AuthContext);
@@ -242,7 +242,8 @@ useEffect(() => {
                 )}
               </div>
             ),
-            'calculadora': <CompoundInterestCalculator />
+            'calculadora': <CompoundInterestCalculator />,
+            'mortgage': <MortgageCalculator />,
           }[activeTab]
         }
       </div>

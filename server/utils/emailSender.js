@@ -170,3 +170,73 @@ exports.sendCalculationEmail = async (to, calculationData, chartDataUrl) => {
     return transporter.sendMail(mailOptions);
 };
 
+
+
+exports.sendMortgageEmail = async (to, mortgageData) => {
+  const {
+    principal, rate, years, paymentsPerYear,
+    tableData = [], chartDataUrl
+  } = mortgageData;
+
+  // Preparamos el adjunto si existe chartDataUrl
+  let attachments = [];
+  if (chartDataUrl) {
+    const base64Data = chartDataUrl.replace(/^data:image\/png;base64,/, '');
+    attachments.push({
+      filename: 'grafico-amortizacion.png',
+      content: Buffer.from(base64Data, 'base64'),
+      cid: 'chart.png@cid'
+    });
+  }
+
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+      <h2 style="background-color: #4F81BD; color: white; padding: 8px;">Datos de entrada</h2>
+      <ul>
+        <li>Principal: €${Number(principal)}</li>
+        <li>Tasa anual: ${Number(rate)}%</li>
+        <li>Plazo: ${Number(years)} años</li>
+        <li>Pagos por año: ${Number(paymentsPerYear)}</li>
+      </ul>
+
+      <h2 style="background-color: #4F81BD; color: white; padding: 8px;">Amortización</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background-color: #4F81BD; color: white;">
+            <th>Período</th>
+            <th>Pago</th>
+            <th>Principal</th>
+            <th>Interés</th>
+            <th>Saldo</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableData.map((row, idx) => `
+            <tr style="background-color: ${idx % 2 === 0 ? '#DCE6F1' : '#FFFFFF'}; text-align: center;">
+              <td>${Number(row.period)}</td>
+              <td>${Number(row.payment).toFixed(2)}</td>
+              <td>${Number(row.principalPayment).toFixed(2)}</td>
+              <td>${Number(row.interestPayment).toFixed(2)}</td>
+              <td>${Number(row.balance).toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      ${attachments.length ? `
+        <h2 style="background-color: #4F81BD; color: white; padding: 8px;">Gráfico de amortización</h2>
+        <img src="cid:chart.png@cid" alt="Gráfico de amortización" style="max-width: 100%;"/>
+      ` : ''}
+    </div>
+  `;
+
+  const mailOptions = {
+    from: `"Soporte App" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: 'Reporte de Amortización de Hipoteca',
+    html: htmlBody,
+    attachments
+  };
+
+  return transporter.sendMail(mailOptions);
+};

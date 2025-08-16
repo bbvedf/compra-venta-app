@@ -49,8 +49,7 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.select {
-  composes: input;
+.select {  
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -177,6 +176,8 @@
   opacity: 1;
 }
 
+
+
 .scrollButtonContainer {
   position: fixed;
   bottom: 20px;
@@ -223,5 +224,4 @@
     width: 40px;
     height: 40px;
     }
-
 }

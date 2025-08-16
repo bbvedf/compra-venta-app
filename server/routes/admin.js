@@ -3,7 +3,8 @@ const { Router } = express;
 const router = Router();
 const pool = require('../db');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
-const { sendUserApprovedEmail, sendUserRejectedEmail, sendCalculationEmail } = require('../utils/emailSender');
+const { sendUserApprovedEmail, sendUserRejectedEmail, sendCalculationEmail, sendMortgageEmail } = require('../utils/emailSender');
+
 
 
 /**
@@ -140,6 +141,30 @@ router.post('/send-calculation', verifyToken, isAdmin, async (req, res) => {
         res.status(500).json({ message: 'Error enviando el correo' });
     }
 });
+
+
+router.post('/send-mortgage', verifyToken, isAdmin, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const mortgageData = req.body; // incluirá principal, rate, years, paymentsPerYear, tableData y chartDataUrl
+
+    console.log('User:', req.user);
+    console.log('Body keys:', Object.keys(mortgageData));
+    console.log('chartDataUrl length:', mortgageData.chartDataUrl ? mortgageData.chartDataUrl.length : 'no data');
+
+    await sendMortgageEmail(userEmail, mortgageData);
+
+    res.json({ message: 'Correo de hipoteca enviado correctamente' });
+  } catch (err) {
+    console.error('Error enviando correo de hipoteca:', err);
+    res.status(500).json({ message: 'Error enviando el correo' });
+  }
+});
+
+
+
+
+
 
 
 

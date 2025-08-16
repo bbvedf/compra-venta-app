@@ -3,7 +3,8 @@ import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import styles from './ThemeMenu.module.css';
-import { FiSun, FiMoon, FiLogOut, FiHome, FiSettings, FiTrendingUp } from 'react-icons/fi';
+import { FiSun, FiMoon, FiLogOut, FiHome, FiSettings, FiTrendingUp, FiBarChart } from 'react-icons/fi';
+
 
 const ThemeMenu = ({ theme, setTheme }) => {
     const { user, logout } = useContext(AuthContext);
@@ -53,6 +54,13 @@ const handleNavigation = (tab) => {
                     </button>
                     )}
                   
+                    {user?.role === 'admin' && (
+                    <button className={styles.menuItem} onClick={() => handleNavigation('mortgage')}>
+                        <FiBarChart size={16} className={styles.icon} />
+                        Amortización Hipoteca
+                    </button>
+                    )}
+
                     {/* Divisor */}
                     {user && (
                         <div className={styles.menuDivider}></div>

@@ -5,6 +5,7 @@ import { toPng } from 'html-to-image';
 import toast from 'react-hot-toast';
 import { FaRegFilePdf, FaRegFileExcel } from 'react-icons/fa6';
 import { MdOutlineAttachEmail } from 'react-icons/md';
+import { FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import {
     LineChart,
     Line,
@@ -21,16 +22,50 @@ const CompoundInterestCalculator = () => {
     const pdfRef = useRef();
 
     const handleExportPDF = () => {
-        const element = pdfRef.current;
+        if (!pdfRef.current) return;
+
+        const body = document.body;
+        const wasDark = body.classList.contains("theme-dark");
+
+        // Overlay que tapa todo para el blink agradable
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.top = 0;
+        overlay.style.left = 0;
+        overlay.style.width = "100vw";
+        overlay.style.height = "100vh";
+        overlay.style.background = wasDark ? "#1e1e2f" : "#fff";
+        overlay.style.zIndex = 9999;
+        document.body.appendChild(overlay);
+
+        // Forzamos tema light temporal
+        body.classList.remove("theme-dark");
+        body.classList.add("theme-light");
+
+        const clone = pdfRef.current.cloneNode(true);
+        document.body.appendChild(clone);
+
         const opt = {
             margin: 0.5,
             filename: `interes-compuesto-${new Date().toISOString().slice(0, 10)}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
+            html2canvas: { scale: 2, useCORS: true },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
-        html2pdf().from(element).set(opt).save();
+
+        html2pdf()
+            .from(clone)
+            .set(opt)
+            .save()
+            .then(() => {
+                // Restauramos tema y limpiamos DOM temporal
+                body.classList.remove("theme-light");
+                if (wasDark) body.classList.add("theme-dark");
+                document.body.removeChild(clone);
+                document.body.removeChild(overlay);
+            });
     };
+
 
     const chartRef = useRef(); // Referencia al contenedor del gráfico
 
@@ -190,10 +225,10 @@ const CompoundInterestCalculator = () => {
             // --- Genera data URL del gráfico si existe ---
             if (chartRef.current) {
                 try {
-                    const dataUrl = await toPng(chartRef.current, { 
+                    const dataUrl = await toPng(chartRef.current, {
                         backgroundColor: '#ffffff',
                         skipFonts: true,
-                        style: { fontFamily: 'Arial, sans-serif' } 
+                        style: { fontFamily: 'Arial, sans-serif' }
                     });
                     console.log('PNG size before send:', dataUrl.length);
                     payload.chartDataUrl = dataUrl;
@@ -407,6 +442,27 @@ const CompoundInterestCalculator = () => {
                 )}
             </div>
 
+            {/* Botones flotantes de scroll */}
+            {tableData.length > 0 && (
+                <div className={styles.scrollButtonContainer}>
+                    <button
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        className={styles.scrollButton}
+                        title="Ir al inicio"
+                    >
+                        <FiArrowUp size={22} />
+                    </button>
+
+                    <button
+                        onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                        className={styles.scrollButton}
+                        title="Ir al final"
+                    >
+                        <FiArrowDown size={22} />
+                    </button>
+                </div>
+            )}
+
             {/* Botones de exportación fuera del PDF */}
             {tableData.length > 0 && (
                 <div className={styles.exportButtonsContainer}>
@@ -424,6 +480,11 @@ const CompoundInterestCalculator = () => {
                 </div>
             )}
         </div>
+
+
+
+
+
 
 
     );
