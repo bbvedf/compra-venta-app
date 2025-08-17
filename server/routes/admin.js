@@ -4,7 +4,7 @@ const router = Router();
 const pool = require('../db');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const { sendUserApprovedEmail, sendUserRejectedEmail, sendCalculationEmail, sendMortgageEmail } = require('../utils/emailSender');
-
+const logger = require('../utils/logger');
 
 
 /**
@@ -27,7 +27,7 @@ router.get('/users', verifyToken, isAdmin, async (req, res) => {
         const result = await pool.query(query);
         res.status(200).json({ users: result.rows });
     } catch (error) {
-        console.error('Error en GET /api/admin/users:', error);
+        logger.error('Error en GET /api/admin/users:', error);
         res.status(500).json({ error: 'Error al obtener usuarios' });
     }
 });
@@ -75,7 +75,7 @@ router.patch('/users/:id', verifyToken, isAdmin, async (req, res) => {
 
         res.status(200).json({ success: true });
     } catch (error) {
-        console.error('Error al actualizar usuario:', error);
+        logger.error('Error al actualizar usuario:', error);
         res.status(500).json({ error: 'Error al actualizar usuario' });
     }
 });
@@ -111,7 +111,7 @@ router.delete('/users/:id', verifyToken, isAdmin, async (req, res) => {
             message: 'Usuario eliminado correctamente'
         });
     } catch (error) {
-        console.error('Error al eliminar usuario:', error);
+        logger.error('Error al eliminar usuario:', error);
         res.status(500).json({
             success: false,
             error: 'Error interno del servidor',
@@ -126,18 +126,18 @@ router.post('/send-calculation', verifyToken, isAdmin, async (req, res) => {
         const userEmail = req.user.email;
         const calculationData = req.body;
 
-        console.log('req.user:', req.user);
-        console.log('req.body:', req.body);
+        logger.info('req.user:', req.user);
+        logger.info('req.body:', req.body);
 
-        console.log('Body keys:', Object.keys(req.body));
-        console.log('chartDataUrl length at route:', req.body.chartDataUrl ? req.body.chartDataUrl.length : 'no data');
+        logger.info('Body keys:', Object.keys(req.body));
+        logger.info('chartDataUrl length at route:', req.body.chartDataUrl ? req.body.chartDataUrl.length : 'no data');
 
 
         await sendCalculationEmail(userEmail, calculationData, req.body.chartDataUrl);
 
         res.json({ message: 'Correo enviado correctamente' });
     } catch (err) {
-        console.error('Error enviando correo de cálculo:', err);
+        logger.error('Error enviando correo de cálculo:', err);
         res.status(500).json({ message: 'Error enviando el correo' });
     }
 });
@@ -148,15 +148,15 @@ router.post('/send-mortgage', verifyToken, isAdmin, async (req, res) => {
     const userEmail = req.user.email;
     const mortgageData = req.body; // incluirá principal, rate, years, paymentsPerYear, tableData y chartDataUrl
 
-    console.log('User:', req.user);
-    console.log('Body keys:', Object.keys(mortgageData));
-    console.log('chartDataUrl length:', mortgageData.chartDataUrl ? mortgageData.chartDataUrl.length : 'no data');
+    logger.info('User:', req.user);
+    logger.info('Body keys:', Object.keys(mortgageData));
+    logger.info('chartDataUrl length:', mortgageData.chartDataUrl ? mortgageData.chartDataUrl.length : 'no data');
 
     await sendMortgageEmail(userEmail, mortgageData);
 
     res.json({ message: 'Correo de hipoteca enviado correctamente' });
   } catch (err) {
-    console.error('Error enviando correo de hipoteca:', err);
+    logger.error('Error enviando correo de hipoteca:', err);
     res.status(500).json({ message: 'Error enviando el correo' });
   }
 });

@@ -1,4 +1,6 @@
+// server/debug.js
+const logger = require('./utils/logger');
 const express = require('express');
-console.log('Versión de Express:', express.version);
-console.log('Router:', express.Router.toString());
+logger.info('Versión de Express:', express.version);
+logger.info('Router:', express.Router.toString());
 

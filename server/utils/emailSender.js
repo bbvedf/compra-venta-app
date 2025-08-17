@@ -1,3 +1,5 @@
+// server/utils/emailSender.js
+const logger = require('../utils/logger');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -99,7 +101,7 @@ exports.sendCalculationEmail = async (to, calculationData, chartDataUrl) => {
     if (chartDataUrl) {
         const base64Data = chartDataUrl.replace(/^data:image\/png;base64,/, '');
         const buffer = Buffer.from(base64Data, 'base64');
-        console.log('Chart PNG size (bytes):', buffer.length); // <-- chequeo
+        logger.info('Chart PNG size (bytes):', buffer.length); // <-- chequeo
 
         attachments.push({
             filename: 'grafico-evolucion.png',
@@ -107,7 +109,7 @@ exports.sendCalculationEmail = async (to, calculationData, chartDataUrl) => {
             cid: 'chart.png@cid'
         });
     }
-    console.log('chartDataUrl length:', chartDataUrl ? chartDataUrl.length : 'no data');
+    logger.info('chartDataUrl length:', chartDataUrl ? chartDataUrl.length : 'no data');
 
 
     const htmlBody = `

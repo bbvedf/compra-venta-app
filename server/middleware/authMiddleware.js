@@ -1,6 +1,7 @@
 //server/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
+const logger = require('../utils/logger');
 
 exports.verifyToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -15,7 +16,7 @@ exports.verifyToken = async (req, res, next) => {
         return res.status(401).json({ error: 'Token requerido' });
     }
     
-    console.log('Token recibido:', token);
+    //logger.info('Token recibido:', token);
 
     try {
         // 1. Verificar el token JWT
@@ -41,7 +42,7 @@ exports.verifyToken = async (req, res, next) => {
         req.user = user.rows[0];
         next();
     } catch (err) {
-        console.error('Error en verifyToken:', err);
+        logger.error('Error en verifyToken:', err);
         res.status(403).json({ error: 'Token inválido o expirado' });
     }
 };

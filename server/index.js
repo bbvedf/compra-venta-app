@@ -1,4 +1,5 @@
 // server/index.js
+const logger = require('./utils/logger');
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -14,9 +15,16 @@ app.use(express.urlencoded({ limit: '5mb', extended: true }));
 app.use("/api/auth", authRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Exportar app para tests
+module.exports = app;
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Servidor corriendo en https://ryzenpc.mooo.com:${PORT}`));
+// Solo levantar servidor si NO estamos en modo test
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => logger.info(`Servidor corriendo en https://ryzenpc.mooo.com:${PORT}`));
+}
+
+
 
 
 
