@@ -247,3 +247,9 @@ exports.setNewPassword = async (req, res) => {
     res.status(400).json({ error: 'Token inválido o expirado' });
   }
 };
+
+exports.__testHelpers = {
+  generateToken,
+  hashPassword: (pwd) => bcrypt.hash(pwd, 10),
+  comparePassword: (pwd, hash) => bcrypt.compare(pwd, hash)
+};

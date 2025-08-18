@@ -6,7 +6,9 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test:db": "docker-compose -f docker-compose.test.yml up -d && NODE_ENV=test npx jest --runInBand --detectOpenHandles",
-    "test:ci": "cross-env NODE_ENV=test npx jest --runInBand --detectOpenHandles --coverage"
+    "test:ci": "cross-env NODE_ENV=test npx jest --runInBand --detectOpenHandles --coverage",
+    "test:unit": "jest --testPathPatterns=tests/unit --setupFilesAfterEnv=./tests/setupTest_noDB.js --coverage",
+    "test:integration": "docker-compose -f ../docker-compose.test.yml up -d postgres-test && jest --testPathPatterns=./tests/integration --setupFilesAfterEnv=./tests/setupTest_DB.js && docker-compose -f ../docker-compose.test.yml down"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +29,7 @@
     "react-router-dom": "^6.30.1"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "cross-env": "^7.0.3",
     "jest": "^30.0.5",
     "supertest": "^7.1.4"

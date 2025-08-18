@@ -20,7 +20,7 @@ exports.verifyToken = async (req, res, next) => {
 
     try {
         // 1. Verificar el token JWT
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // ¡Esta línea era la faltante!
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // 2. Verificar que el usuario existe y está aprobado
         const user = await pool.query(

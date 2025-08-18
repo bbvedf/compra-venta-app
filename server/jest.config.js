@@ -1,6 +1,5 @@
 module.exports = {
   testEnvironment: 'node',
-  setupFilesAfterEnv: ['<rootDir>/tests/setupTestDB.js'],
   testMatch: ["<rootDir>/tests/**/*.test.js"], // apunta a la carpeta tests al mismo nivel que server
   moduleNameMapper: {
   '^nodemailer$': '<rootDir>/__mocks__/nodemailer.js',
@@ -13,4 +12,11 @@ module.exports = {
     "/client/",
     "/login-roles/"
   ],
+  collectCoverage: true, // activa coverage
+    collectCoverageFrom: [
+      "server/**/*.js", // incluye controladores, servicios, etc.
+      "!server/index.js", // opcional: si index.js solo lanza el app
+      "!server/db.js",    // opcional: excluir configuraciones
+    ],
+    coverageDirectory: "<rootDir>/coverage", // opcional, carpeta de resultados
 };

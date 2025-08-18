@@ -1,10 +1,16 @@
 // tests/authFlow.test.js
 const request = require('supertest');
-const app = require('../index');
-const pool = require('../db');
+const app = require('../../index');
+const pool = require('../../db');
 const jwt = require('jsonwebtoken');
-const eventTypes = require('../constants/eventTypes');
+const eventTypes = require('../../constants/eventTypes');
 const { OAuth2Client } = require('google-auth-library');
+
+jest.mock('../../utils/logger', () => ({
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+}));
 
 jest.mock('google-auth-library'); // asegura que use el mock de __mocks__
 
