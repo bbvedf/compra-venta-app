@@ -225,8 +225,12 @@ npm run dev
 
 ## 📝 Próximas Mejoras
 
-- Tests E2E con Cypress
-- Registro de login/actividad   
+- CI/CD + SonarQube/GitHub Actions (calidad y despliegues)  
+- Swagger/OpenAPI + validación con Joi/zod (seguridad y DX)  
+- E2E con Cypress (garantizar que todo lo que hicimos en tests unitarios funciona en la UI)  
+- Helmet + Rate limiting (endurecer seguridad)  
+- Monitoring (Grafana/Prometheus)  
+- Nuevos componentes  
 
 ---
 
