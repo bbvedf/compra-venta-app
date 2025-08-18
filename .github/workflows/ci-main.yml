@@ -1,5 +1,5 @@
-# .github/workflows/ci.yml
-name: CI
+# .github/workflows/ci-main.yml
+name: CI Main
 
 on:
   push:

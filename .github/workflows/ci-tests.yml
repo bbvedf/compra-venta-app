@@ -1,4 +1,4 @@
-# /.github/workflows/tests.yml
+# /.github/workflows/ci-tests.yml
 name: CI Tests
 
 on:
@@ -20,6 +20,7 @@ jobs:
         working-directory: server
       - name: Run Unit Tests
         run: npm run test:unit
+        working-directory: server
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -53,3 +54,4 @@ jobs:
           POSTGRES_PASSWORD: test
           POSTGRES_DB: testdb
         run: npm run test:integration
+        working-directory: server
