@@ -3,7 +3,6 @@
 
 # environment variables
 .env
-.env.test
 
 # logs
 logs
