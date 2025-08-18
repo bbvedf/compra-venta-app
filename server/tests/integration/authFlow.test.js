@@ -30,6 +30,7 @@ describe('Auth Flow Integration Test', () => {
     await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email = $1)', [testEmail]);
     await pool.query('DELETE FROM users WHERE email = $1', [testEmail]);
     await pool.end();
+    await new Promise(r => setImmediate(r)); // limpia handles pendientes
   });
 
   beforeEach(() => {
@@ -128,6 +129,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
     await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', ['google_%']);
     await pool.query('DELETE FROM users WHERE email LIKE $1', ['google_%']);
     await pool.end();
+    await new Promise(r => setImmediate(r)); // limpia handles pendientes
   });
 
   beforeEach(() => {
