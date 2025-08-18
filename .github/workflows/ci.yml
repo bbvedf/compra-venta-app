@@ -58,9 +58,8 @@ jobs:
         with:
           entryPoint: server
           args: >
-            -Dsonar.projectKey=compra-venta-app
+            -Dsonar.projectKey=bbvedf_compra-venta-app
             -Dsonar.organization=bbvedf
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
             -Dsonar.javascript.lcov.reportPaths=server/coverage/lcov.info
-                
