@@ -2,35 +2,36 @@
 
 ## 🛠 Stack Tecnológico  
 ### 🚀 Tecnologías principales
-| ![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react) | ![Node.js](https://img.shields.io/badge/Node.js-16+-339933?logo=node.js) |
-|---|---|
-| ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white) | ![Docker](https://img.shields.io/badge/Docker-✓-2496ED?logo=docker&logoColor=white) |
+![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-16+-339933?logo=node.js)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-✓-2496ED?logo=docker&logoColor=white)
 
 ---
 
 ### 🧩 Librerías de frontend
-| ![React Router](https://img.shields.io/badge/React_Router-6.x-CA4245?logo=react-router&logoColor=white) | ![Recharts](https://img.shields.io/badge/Recharts-3.x-FF6384?logo=chart.js&logoColor=white) |
-|---|---|
-| ![React Icons](https://img.shields.io/badge/React_Icons-5.5.0-F7DF1E?logo=react) | |
+![React Router](https://img.shields.io/badge/React_Router-6.x-CA4245?logo=react-router&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-3.x-FF6384?logo=chart.js&logoColor=white)
+![React Icons](https://img.shields.io/badge/React_Icons-5.5.0-F7DF1E?logo=react)
 
 ---
 
 ### 🔐 Seguridad y autenticación
-| ![JWT](https://img.shields.io/badge/JWT-Auth-000000?logo=json-web-tokens) | ![Google OAuth](https://img.shields.io/badge/Auth-Google_OAuth2-4285F4?logo=google&logoColor=white) |
-|---|---|
+![JWT](https://img.shields.io/badge/JWT-Auth-000000?logo=json-web-tokens)
+![Google OAuth](https://img.shields.io/badge/Auth-Google_OAuth2-4285F4?logo=google&logoColor=white)
 
 ---
 
 ### 📊 Logging y monitorización
-| ![Logger](https://img.shields.io/badge/Logger-User_Events-blueviolet?logo=logstash&logoColor=white) | ![DB Logs](https://img.shields.io/badge/DB_Events-Tracked-informational?logo=postgresql) |
-|---|---|
+![Logger](https://img.shields.io/badge/Logger-User_Events-blueviolet?logo=logstash&logoColor=white)
+![DB Logs](https://img.shields.io/badge/DB_Events-Tracked-informational?logo=postgresql)
 
 ---
 
 ### 🧪 Testing
-| ![Jest](https://img.shields.io/badge/Tests-Jest-99424f?logo=jest) |
-|---|
+![Jest](https://img.shields.io/badge/Tests-Jest-99424f?logo=jest)
 
+---
 
 ## 📌 Descripción  
 Sistema completo de autenticación con registro, login y rutas protegidas.  
