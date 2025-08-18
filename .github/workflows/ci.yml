@@ -50,6 +50,15 @@ jobs:
         working-directory: server
 
       - name: Run tests
-        # cross-env asegura que NODE_ENV se pase correctamente, aunque ya esté en env
-        run: npx cross-env NODE_ENV=test npx jest --runInBand --detectOpenHandles
+        run: npm run test:ci
         working-directory: server
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectKey: compra-venta-app
+          organization: bbvedf
+          token: ${{ secrets.SONAR_TOKEN }}
+          extraProperties: |
+            sonar.javascript.lcov.reportPaths=server/coverage/lcov.info
+    

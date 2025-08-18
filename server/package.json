@@ -6,7 +6,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test:db": "docker-compose -f docker-compose.test.yml up -d && NODE_ENV=test npx jest --runInBand --detectOpenHandles",
-    "test:ci": "cross-env NODE_ENV=test npx jest --runInBand --detectOpenHandles"
+    "test:ci": "cross-env NODE_ENV=test npx jest --runInBand --detectOpenHandles --coverage"
   },
   "keywords": [],
   "author": "",
