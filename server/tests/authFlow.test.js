@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 const eventTypes = require('../constants/eventTypes');
 const { OAuth2Client } = require('google-auth-library');
 
+jest.mock('google-auth-library'); // asegura que use el mock de __mocks__
+
 describe('Auth Flow Integration Test', () => {
   let testEmail;
   let testPassword = 'Test123!';
@@ -18,7 +20,10 @@ describe('Auth Flow Integration Test', () => {
   afterAll(async () => {
     await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email = $1)', [testEmail]);
     await pool.query('DELETE FROM users WHERE email = $1', [testEmail]);
-    //await pool.end();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks(); // limpia mocks para cada test
   });
 
   it('Registro manual', async () => {
@@ -48,7 +53,6 @@ describe('Auth Flow Integration Test', () => {
   });
 
   it('Establecer nueva contraseña', async () => {
-    // Generamos un token como hace tu API
     const dbUser = await pool.query('SELECT id FROM users WHERE email = $1', [testEmail]);
     const userId = dbUser.rows[0].id;
     const tokenReset = jwt.sign({ userId }, process.env.JWT_SECRET || 'mi_secreto', { expiresIn: '15m' });
@@ -69,7 +73,7 @@ describe('Auth Flow Integration Test', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe(testEmail);
-    token = res.body.token; // guardamos el token para rutas protegidas
+    token = res.body.token;
     expect(token).toBeDefined();
   });
 
@@ -111,9 +115,12 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   });
 
   afterAll(async () => {
-     // Solo limpiar datos
     await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', ['google_%']);
     await pool.query('DELETE FROM users WHERE email LIKE $1', ['google_%']);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
   it('Registro vía Google (usuario nuevo)', async () => {
@@ -130,6 +137,22 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
 
     const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [newUserEmail]);
     expect(userResult.rows.length).toBe(1);
+  });
+
+  it('Login vía Google con token inválido', async () => {
+    // Simulamos que Google rechaza el token
+    googleClientMock.verifyIdToken.mockRejectedValueOnce(new Error('Invalid token'));
+
+    const res = await request(app)
+      .post('/api/auth/google')
+      .send({ token: 'invalid-google-token' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBeDefined(); // tu API debería devolver algo como { error: 'Token inválido' }
+
+    // Comprobamos que no se ha creado ningún usuario nuevo
+    const userResult = await pool.query('SELECT * FROM users WHERE email LIKE $1', ['%invalid-google-token%']);
+    expect(userResult.rows.length).toBe(0);
   });
 
   it('Login vía Google (usuario aprobado)', async () => {
@@ -171,4 +194,3 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
     expect(logTypes).toContain(eventTypes.SUSPICIOUS_LOGIN);
   });
 });
-
