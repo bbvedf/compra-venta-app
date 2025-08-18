@@ -9,7 +9,10 @@
 ![Recharts](https://img.shields.io/badge/Recharts-3.x-FF6384?logo=chart.js&logoColor=white)  
 ![Docker](https://img.shields.io/badge/Docker-✓-2496ED?logo=docker&logoColor=white)  
 ![React Icons](https://img.shields.io/badge/React_Icons-5.5.0-F7DF1E?logo=react)  
-
+![Logger](https://img.shields.io/badge/Logger-User_Events-blueviolet?logo=logstash&logoColor=white)
+![DB Logs](https://img.shields.io/badge/DB_Events-Tracked-informational?logo=postgresql)
+![Jest](https://img.shields.io/badge/Tests-Jest-99424f?logo=jest)
+![Google OAuth](https://img.shields.io/badge/Auth-Google_OAuth2-4285F4?logo=google&logoColor=white)
 
 ## 📌 Descripción  
 Sistema completo de autenticación con registro, login y rutas protegidas.  
@@ -23,6 +26,9 @@ Sistema completo de autenticación con registro, login y rutas protegidas.
 - Menú unificado: Todas las opciones de navegación ahora disponibles en el menú hamburguesa
 - Nueva calculadora de interés compuesto
 - Nueva calculadora de amortización hipotecaria
+- Registro de eventos de usuario en base de datos
+- Logs de usuario mediante `userLogger` para seguimiento y auditoría
+- Tests automatizados con Jest, incluyendo mocks de Google OAuth2 y nodemailer
 
 ---
 
@@ -44,18 +50,20 @@ Sistema completo de autenticación con registro, login y rutas protegidas.
 ## 🏗️ Estructura del Proyecto  
 ```
 compra-venta-app/
-├── client/               # Frontend React
+├── client/                      # Frontend React
 │   ├── src/
-│   │   ├── components/   # Componentes reutilizables
-│   │   ├── context/      # Gestión de autenticación
+│   │   ├── components/          # Componentes reutilizables
+│   │   ├── context/             # Gestión de autenticación
 │   │   └── ...
-├── server/               # Backend Node.js
+├── server/                      # Backend Node.js
 │   ├── controllers/
 │   ├── routes/
-│   └── ...
-├── nginx/                # Configuración Nginx + certbot
-├── docker-compose.yml    # Entorno Docker local
-├── docker-compose.prod.yml # Entorno Docker en producción
+│   ├── ...
+│   ├── tests/                   # Scripts de flujos
+│   │   └── ...
+├── nginx/                       # Configuración Nginx + certbot
+├── docker-compose.test.yml      # Entorno Docker local
+├── docker-compose.yml           # Entorno Docker en producción
 ```
 
 ---
@@ -66,18 +74,19 @@ compra-venta-app/
 ```bash
 git clone https://github.com/tu-usuario/compra-venta-app.git
 cd compra-venta-app
-cp .env.example .env  # Configurar variables
+cp .env.example .env.test  # Configurar variables
 ```
 
-### 2. Iniciar entorno local:
+### 2. Instalar dependencias:
 ```bash
-docker-compose up --build
+npm install
 ```
 
-Acceder:
+### 3. Iniciar entorno de test:
+```bash
+docker-compose -f docker-compose.test.yml up -d
+```
 
-- Frontend: http://localhost:3000  
-- Backend: http://localhost:5000  
 
 ---
 
@@ -93,8 +102,16 @@ Este proyecto puede ejecutarse en entorno productivo con:
 
 Para iniciar producción:  
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+cp .env.example .env # Configurar variables
+docker-compose -f docker-compose.yml up --build
 ```
+
+Acceder:  
+
+- Frontend: http://localhost:3000  
+- Backend: http://localhost:5000  
+
+
 
 ---
 
@@ -178,6 +195,16 @@ backup_total_20250807_2130.tar.gz
 - Generación de tabla de amortización completa  
 - Visualización gráfica del saldo y pagos  
 - Exports a PDF, Excel y/o envío por correo electrónico  
+
+✅ **Registro de eventos y logging**
+- Cada acción relevante del usuario (registro, login, logout, login fallido, login pendiente de aprobación) se almacena en users_logs  
+- userLogger gestiona la creación de estos eventos y puede extenderse para auditorías o alertas de seguridad  
+- Mensajes de error en controllers y middleware reemplazados por logs consistentes  
+
+✅ **Tests y Mocks**  
+- Los tests de Google Login usan mocks para google-auth-library y nodemailer  
+- La base de datos se inicializa y limpia automáticamente durante los tests de integración (authFlow.test.js)  
+- Registro de eventos de usuario verificado en tests mediante consultas a la tabla users_logs  
 
 ---
 
