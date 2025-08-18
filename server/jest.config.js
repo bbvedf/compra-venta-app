@@ -1,5 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
+  detectOpenHandles: true,
   testMatch: ["<rootDir>/tests/**/*.test.js"], // apunta a la carpeta tests al mismo nivel que server
   moduleNameMapper: {
   '^nodemailer$': '<rootDir>/__mocks__/nodemailer.js',
