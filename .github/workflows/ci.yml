@@ -1,3 +1,4 @@
+# .github/workflows/ci.yml
 name: CI
 
 on:
@@ -25,11 +26,12 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgres://testuser:testpass@postgres:5433/db_test
+      DATABASE_URL: postgres://testuser:testpass@localhost:5433/db_test
       NODE_ENV: test
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -47,5 +49,6 @@ jobs:
         working-directory: server
 
       - name: Run tests
-        run: npm run test:ci
+        # cross-env asegura que NODE_ENV se pase correctamente, aunque ya esté en env
+        run: npx cross-env NODE_ENV=test npx jest --runInBand --detectOpenHandles
         working-directory: server
