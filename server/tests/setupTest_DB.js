@@ -15,7 +15,7 @@ beforeAll(async () => {
     }
   }
 
-  // Crear tabla users
+  // Crear tablas
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -28,7 +28,6 @@ beforeAll(async () => {
     );
   `);
 
-  // Crear tabla users_logs
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users_logs (
       id SERIAL PRIMARY KEY,
@@ -41,7 +40,7 @@ beforeAll(async () => {
     );
   `);
 
-  // Usuario dummy para pruebas
+  // Usuario dummy
   await pool.query(`
     INSERT INTO users (username, email, password, is_approved, role)
     VALUES ('tester', 'test@example.com', 'hashedpass', true, 'basic')
@@ -49,9 +48,13 @@ beforeAll(async () => {
   `);
 }, 30000);
 
-afterAll(async () => {
-  // Limpiar tablas después de los tests
+beforeEach(async () => {
+  // Truncar antes de cada test
   await pool.query("TRUNCATE users_logs RESTART IDENTITY CASCADE;");
   await pool.query("TRUNCATE users RESTART IDENTITY CASCADE;");
+});
+
+afterAll(async () => {
+  // Cerrar al final de toda la suite
   await pool.end();
 });
