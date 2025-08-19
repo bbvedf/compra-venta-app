@@ -1,3 +1,4 @@
+// server/controllers/auth.js
 // Lógica de negocio: qué sucede cuando alguien se registra, inicia sesión, etc.
 const pool = require('../db');
 const bcrypt = require('bcryptjs');

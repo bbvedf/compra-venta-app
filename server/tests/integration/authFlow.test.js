@@ -13,8 +13,6 @@ jest.mock('../../utils/logger', () => ({
   error: jest.fn(),
 }));
 
-jest.mock('google-auth-library'); // asegura que use el mock de __mocks__
-
 describe('Auth Flow Integration Test', () => {
   let testEmail;
   let testPassword = 'Test123!';
@@ -25,12 +23,15 @@ describe('Auth Flow Integration Test', () => {
   });
 
   afterAll(async () => {
-    await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email = $1)', [testEmail]);
-    await pool.query('DELETE FROM users WHERE email = $1', [testEmail]);
+    await pool.query(
+      `DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)`,
+      ['test_%']
+    );
+    await pool.query(`DELETE FROM users WHERE email LIKE $1`, ['test_%']);
   });
 
   beforeEach(() => {
-    jest.clearAllMocks(); // limpia mocks para cada test
+    jest.clearAllMocks();
   });
 
   it('Registro manual', async () => {
@@ -110,28 +111,34 @@ describe('Auth Flow Integration Test', () => {
 });
 
 describe('Auth Flow Google + Usuarios desconocidos', () => {
-  let googleClientMock;
   let newUserEmail;
   let existingUserEmail;
   let token;
 
   beforeAll(() => {
-    googleClientMock = new OAuth2Client();
     newUserEmail = `google_new_${Date.now()}@example.com`;
     existingUserEmail = `google_existing_${Date.now()}@example.com`;
   });
 
   afterAll(async () => {
-    await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', ['google_%']);
-    await pool.query('DELETE FROM users WHERE email LIKE $1', ['google_%']);    
+    await pool.query(
+      `DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)`,
+      ['google_%']
+    );
+    await pool.query(`DELETE FROM users WHERE email LIKE $1`, ['google_%']);
+    await pool.query(
+      `DELETE FROM users_logs WHERE user_id IS NULL AND details->>'email' LIKE $1`,
+      ['unknown_%']
+    );
   });
 
   beforeEach(() => {
     jest.clearAllMocks();
+    OAuth2Client.prototype.verifyIdToken = jest.fn();
   });
 
   it('Registro vía Google (usuario nuevo)', async () => {
-    googleClientMock.verifyIdToken.mockResolvedValueOnce({
+    OAuth2Client.prototype.verifyIdToken.mockResolvedValueOnce({
       getPayload: () => ({ email: newUserEmail, name: 'GoogleUserNew' }),
     });
 
@@ -147,19 +154,17 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   });
 
   it('Login vía Google con token inválido', async () => {
-    // Simulamos que Google rechaza el token
-    googleClientMock.verifyIdToken.mockRejectedValueOnce(new Error('Invalid token'));
+    OAuth2Client.prototype.verifyIdToken.mockRejectedValueOnce(new Error('Invalid token'));
 
     const res = await request(app)
       .post('/api/auth/google')
       .send({ token: 'invalid-google-token' });
 
     expect(res.status).toBe(401);
-    expect(res.body.error).toBeDefined(); // tu API debería devolver algo como { error: 'Token inválido' }
+    expect(res.body.error).toBeDefined();
 
-    // Comprobamos que no se ha creado ningún usuario nuevo
-    const userResult = await pool.query('SELECT * FROM users WHERE email LIKE $1', ['%invalid-google-token%']);
-    expect(userResult.rows.length).toBe(0);
+    const users = await pool.query('SELECT * FROM users WHERE email = $1', ['invalid-google-token']);
+    expect(users.rows.length).toBe(0);
   });
 
   it('Login vía Google (usuario aprobado)', async () => {
@@ -169,7 +174,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
     );
     const userId = insertRes.rows[0].id;
 
-    googleClientMock.verifyIdToken.mockResolvedValueOnce({
+    OAuth2Client.prototype.verifyIdToken.mockResolvedValueOnce({
       getPayload: () => ({ email: existingUserEmail, name: 'GoogleUserExisting' }),
     });
 
@@ -196,7 +201,10 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
 
     expect(res.status).toBe(401);
 
-    const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id IS NULL AND details->>\'email\' = $1', [unknownEmail]);
+    const logs = await pool.query(
+      "SELECT event_type FROM users_logs WHERE user_id IS NULL AND details->>'email' = $1",
+      [unknownEmail]
+    );
     const logTypes = logs.rows.map(r => r.event_type);
     expect(logTypes).toContain(eventTypes.SUSPICIOUS_LOGIN);
   });
