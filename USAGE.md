@@ -1,8 +1,10 @@
+### 📄 `USAGE.md`
+
 # 📖 Uso y Scripts - Compra-Venta App
 
 Este documento describe los scripts disponibles en el proyecto y cómo utilizarlos en desarrollo y test.
 
----
+
 
 ## 🧩 Scripts en `package.json`
 
@@ -18,7 +20,7 @@ Este documento describe los scripts disponibles en el proyecto y cómo utilizarl
 - `npm run build` → Construye la app optimizada para producción.
 - `npm test` → Ejecuta los tests del frontend.
 
----
+
 
 ## 🐳 Docker
 
@@ -34,7 +36,7 @@ docker-compose -f docker-compose.yml up --build
 ```
 Levanta todo el stack (Nginx + Backend + Frontend + PostgreSQL) con HTTPS.
 
----
+
 
 ## 🔄 Backups
 
