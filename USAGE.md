@@ -7,10 +7,11 @@ Este documento describe los scripts disponibles en el proyecto y cómo utilizarl
 ## 🧩 Scripts en `package.json`
 
 ### Servidor (backend)
-- `npm run dev` → Inicia el servidor en modo desarrollo (nodemon).
 - `npm run start` → Inicia el servidor en producción.
-- `npm run test` → Ejecuta los tests con Jest.
-- `npm run lint` → Revisa errores de estilo y sintaxis con ESLint.
+- `npm run test:ci` → Corre GitHub Actions: coverage + sin levantar nada manualmente (ya lo maneja el workflow).
+- `npm run test:unit` → Tests rápidos, sin BD (usa mock). Para trabajar en local sin levantar contenedores.
+- `npm run test:integration` → Tests que sí dependen de BD real, pero la levanta y tumba automáticamente.
+- `npm run test:db` → Levanta BD, corre todo, útil en local si quieres simular como en CI.
 
 ### Cliente (frontend)
 - `npm start` → Lanza el frontend en modo desarrollo.
@@ -27,14 +28,15 @@ docker-compose -f docker-compose.test.yml up -d
 ```
 Levanta backend, frontend y base de datos en contenedores para testing local.
 
-###Producción
+### Producción
 ```bash
 docker-compose -f docker-compose.yml up --build
 ```
 Levanta todo el stack (Nginx + Backend + Frontend + PostgreSQL) con HTTPS.
 
+---
 
-🔄 Backups
+## 🔄 Backups
 
 ./mnt_backup.sh → Genera un archivo .tar.gz con proyecto + base de datos.
 
