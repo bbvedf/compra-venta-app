@@ -1,8 +1,10 @@
+### 📄 `API.md`
+
 # 🔐 API - Compra-Venta App
 
 Este documento describe los endpoints principales del sistema de autenticación.
 
----
+
 
 ## 📌 Endpoints Clave
 
@@ -36,7 +38,6 @@ Este documento describe los endpoints principales del sistema de autenticación.
 - Mensajes de error descriptivos.  
 - Indicadores de carga (loading states).  
 
----
 
 ## 📈 Calculadoras Integradas
 
@@ -52,16 +53,16 @@ Este documento describe los endpoints principales del sistema de autenticación.
 - Gráfica del saldo y pagos.  
 - Export a PDF, Excel o correo electrónico.  
 
----
 
 ## 📋 Logging y Auditoría
 - Cada acción relevante del usuario (registro, login, logout, login fallido, login pendiente de aprobación) se almacena en `users_logs`.  
 - `userLogger` gestiona la creación de estos eventos.  
 - Útil para auditorías y alertas de seguridad.  
 
----
-
 ## 🧪 Tests y Mocks
 - Tests de Google Login usan mocks de `google-auth-library` y `nodemailer`.  
 - La base de datos se inicializa y limpia automáticamente durante los tests de integración (`authFlow.test.js`).  
 - Los eventos de usuario se validan con consultas a `users_logs`.  
+
+---
+
