@@ -1,7 +1,11 @@
 const request = require('supertest');
 const app = require('../../index');
 const pool = require('../../db');
-const { eventTypes } = require('../../constants');
+const eventTypes = require('../../constants/eventTypes');
+const { OAuth2Client } = require('google-auth-library');
+
+jest.mock('../../utils/logger', () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn(), })); 
+jest.mock('google-auth-library'); // asegura que use el mock de __mocks__
 
 let token;
 const testEmail = 'testuser@example.com';
