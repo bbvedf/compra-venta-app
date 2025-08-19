@@ -16,11 +16,11 @@ Este documento cubre cómo se ejecutan y estructuran los tests del proyecto.
 ---
 
 ## 📂 Estructura
-server/tests/
-├── authFlow.test.js # Flujo de registro y login
-├── mocks/ # Mocks de librerías externas
-│ ├── google-auth-library.js
-│ └── nodemailer.js
+server/tests/  
+├── authFlow.test.js # Flujo de registro y login  
+├── mocks/ # Mocks de librerías externas  
+│ ├── google-auth-library.js  
+│ └── nodemailer.js  
 
 ---
 
