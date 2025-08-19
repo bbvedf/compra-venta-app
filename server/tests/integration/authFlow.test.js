@@ -1,7 +1,5 @@
 // tests/authFlow.test.js
 
-/// <reference types="jest" />
-
 const request = require('supertest');
 const app = require('../../index');
 const pool = require('../../db');

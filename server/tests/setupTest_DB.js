@@ -2,6 +2,19 @@
 const pool = require('../db');
 
 beforeAll(async () => {
+  // Esperar que la DB esté lista
+  let retries = 5;
+  while (retries) {
+    try {
+      await pool.query('SELECT 1');
+      break;
+    } catch (err) {
+      retries -= 1;
+      console.log('Waiting for DB... retrying');
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
   // Crear tabla users
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
