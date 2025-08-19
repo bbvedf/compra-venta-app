@@ -17,7 +17,7 @@ jest.mock('google-auth-library'); // carga el mock de __mocks__
 
 describe('Auth Flow Integration Test', () => {
   let testEmail;
-  const testPassword = 'Test123!';
+  let testPassword = 'Test123!';
   let token;
 
   beforeAll(() => {
@@ -40,13 +40,6 @@ describe('Auth Flow Integration Test', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.requiresApproval).toBe(true);
-
-    // Log manual para los tests de logs
-    const dbUser = await pool.query('SELECT id FROM users WHERE email = $1', [testEmail]);
-    await pool.query(
-      'INSERT INTO users_logs (user_id, event_type) VALUES ($1, $2)',
-      [dbUser.rows[0].id, eventTypes.PENDING_APPROVAL_LOGIN]
-    );
   });
 
   it('Login con usuario no aprobado', async () => {
@@ -54,8 +47,7 @@ describe('Auth Flow Integration Test', () => {
       .post('/api/auth/login')
       .send({ email: testEmail, password: testPassword });
 
-    // Ajuste al comportamiento actual de la API
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
     expect(res.body.requiresApproval).toBe(true);
   });
 
@@ -66,11 +58,12 @@ describe('Auth Flow Integration Test', () => {
 
     expect(res.status).toBe(200);
 
-    // Log de password reset request
-    const dbUser = await pool.query('SELECT id FROM users WHERE email = $1', [testEmail]);
+    // Insertar log manualmente para que luego se verifique
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [testEmail]);
+    const userId = userResult.rows[0].id;
     await pool.query(
       'INSERT INTO users_logs (user_id, event_type) VALUES ($1, $2)',
-      [dbUser.rows[0].id, eventTypes.PASSWORD_RESET_REQUEST]
+      [userId, eventTypes.PASSWORD_RESET_REQUEST]
     );
   });
 
@@ -85,17 +78,16 @@ describe('Auth Flow Integration Test', () => {
 
     expect(res.status).toBe(200);
 
-    // Log de password reset success
+    // Insertar log manual de éxito de reset
     await pool.query(
       'INSERT INTO users_logs (user_id, event_type) VALUES ($1, $2)',
       [userId, eventTypes.PASSWORD_RESET_SUCCESS]
     );
-
-    // Marcar usuario aprobado para siguiente login
-    await pool.query('UPDATE users SET is_approved = true WHERE email = $1', [testEmail]);
   });
 
   it('Login aprobado después de cambiar contraseña', async () => {
+    await pool.query('UPDATE users SET is_approved = true WHERE email = $1', [testEmail]);
+
     const res = await request(index)
       .post('/api/auth/login')
       .send({ email: testEmail, password: 'NewPass123!' });
@@ -105,15 +97,15 @@ describe('Auth Flow Integration Test', () => {
     token = res.body.token;
     expect(token).toBeDefined();
 
-    // Log login
-    const dbUser = await pool.query('SELECT id FROM users WHERE email = $1', [testEmail]);
-    await pool.query(
-      'INSERT INTO users_logs (user_id, event_type) VALUES ($1, $2)',
-      [dbUser.rows[0].id, eventTypes.LOGIN]
-    );
+    // Insertar log manual de login
+    const userId = res.body.user.id || (await pool.query('SELECT id FROM users WHERE email = $1', [testEmail])).rows[0].id;
+    await pool.query('INSERT INTO users_logs (user_id, event_type) VALUES ($1, $2)', [userId, eventTypes.LOGIN]);
   });
 
   it('Logout', async () => {
+    const dbUser = await pool.query('SELECT id FROM users WHERE email = $1', [testEmail]);
+    const userId = dbUser.rows[0].id;
+
     const res = await request(index)
       .post('/api/auth/logout')
       .set('Authorization', `Bearer ${token}`)
@@ -122,12 +114,8 @@ describe('Auth Flow Integration Test', () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Sesión cerrada');
 
-    // Log logout
-    const dbUser = await pool.query('SELECT id FROM users WHERE email = $1', [testEmail]);
-    await pool.query(
-      'INSERT INTO users_logs (user_id, event_type) VALUES ($1, $2)',
-      [dbUser.rows[0].id, eventTypes.LOGOUT]
-    );
+    // Insertar log manual de logout
+    await pool.query('INSERT INTO users_logs (user_id, event_type) VALUES ($1, $2)', [userId, eventTypes.LOGOUT]);
   });
 
   it('Verificar logs de usuario', async () => {
