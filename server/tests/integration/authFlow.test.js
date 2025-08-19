@@ -18,11 +18,15 @@ describe('Auth Flow Integration Test', () => {
   let testPassword = 'Test123!';
   let token;
   let userId;
-  const JWT_SECRET = process.env.JWT_SECRET || 'mi_secreto'; // Coincide con auth.js
+  const JWT_SECRET = process.env.JWT_SECRET || 'testsecret'; // Coincide con .env.test
 
   beforeAll(async () => {
+    // No creamos el usuario aquí para evitar conflictos con TRUNCATE
+  });
+
+  beforeEach(async () => {
+    // Crear usuario fresco para cada test
     testEmail = `test_${Date.now()}@example.com`;
-    // Crear usuario inicial pendiente
     const res = await pool.query(
       'INSERT INTO users (username, email, password, is_approved, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, is_approved',
       ['testuser', testEmail, await require('../../controllers/auth').__testHelpers.hashPassword(testPassword), false, 'basic']
@@ -32,15 +36,14 @@ describe('Auth Flow Integration Test', () => {
     expect(res.rows[0].is_approved).toBe(false); // Verifica estado inicial
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
+    // Limpiar datos específicos de cada test
     await pool.query('DELETE FROM users_logs WHERE user_id = $1', [userId]);
     await pool.query('DELETE FROM users WHERE id = $1', [userId]);
-    await pool.end(); // Cierra la conexión a la base de datos
   });
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  // No cerramos el pool aquí, se manejará en setupTest_DB.js
+  // afterAll(async () => {});
 
   it('Registro manual', async () => {
     const res = await request(index)
@@ -54,7 +57,6 @@ describe('Auth Flow Integration Test', () => {
   });
 
   it('Login con usuario no aprobado', async () => {
-    // Verifica que el usuario existe y no está aprobado
     const userCheck = await pool.query('SELECT is_approved FROM users WHERE email = $1', [testEmail]);
     console.log('Usuario antes de login:', userCheck.rows); // Depuración
     expect(userCheck.rows.length).toBe(1);
@@ -69,14 +71,12 @@ describe('Auth Flow Integration Test', () => {
     expect(res.body.requiresApproval).toBe(true);
     expect(res.body.message).toBe('Cuenta pendiente de aprobación');
 
-    // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de login no aprobado:', logs.rows); // Depuración
     expect(logs.rows.some(log => log.event_type === eventTypes.PENDING_APPROVAL_LOGIN)).toBe(true);
   });
 
   it('Reset password request', async () => {
-    // Verifica que el usuario existe
     const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [testEmail]);
     console.log('Usuario antes de reset:', userCheck.rows); // Depuración
     expect(userCheck.rows.length).toBe(1);
@@ -89,7 +89,6 @@ describe('Auth Flow Integration Test', () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Enlace enviado al correo');
 
-    // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de reset:', logs.rows); // Depuración
     expect(logs.rows.some(log => log.event_type === eventTypes.PASSWORD_RESET_REQUEST)).toBe(true);
@@ -106,20 +105,17 @@ describe('Auth Flow Integration Test', () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Contraseña actualizada');
 
-    // Verifica que la contraseña se haya actualizado
     const userCheck = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
     console.log('Contraseña después de reset:', userCheck.rows[0].password); // Depuración
     const isPasswordValid = await require('../../controllers/auth').__testHelpers.comparePassword('NewPass123!', userCheck.rows[0].password);
     expect(isPasswordValid).toBe(true);
 
-    // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de new-password:', logs.rows); // Depuración
     expect(logs.rows.some(log => log.event_type === eventTypes.PASSWORD_RESET_SUCCESS)).toBe(true);
   });
 
   it('Login aprobado después de cambiar contraseña', async () => {
-    // Aprobar al usuario
     await pool.query('UPDATE users SET is_approved = true WHERE id = $1', [userId]);
     const userCheck = await pool.query('SELECT is_approved FROM users WHERE id = $1', [userId]);
     console.log('Usuario antes de login aprobado:', userCheck.rows); // Depuración
@@ -135,14 +131,18 @@ describe('Auth Flow Integration Test', () => {
     token = res.body.token;
     expect(token).toBeDefined();
 
-    // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de login aprobado:', logs.rows); // Depuración
     expect(logs.rows.some(log => log.event_type === eventTypes.LOGIN)).toBe(true);
   });
 
   it('Logout', async () => {
-    // Verifica que el token esté definido
+    // Asegurar que el usuario esté aprobado y haya iniciado sesión
+    await pool.query('UPDATE users SET is_approved = true WHERE id = $1', [userId]);
+    const loginRes = await request(index)
+      .post('/api/auth/login')
+      .send({ email: testEmail, password: testPassword });
+    token = loginRes.body.token;
     console.log('Token usado para logout:', token); // Depuración
     expect(token).toBeDefined();
 
@@ -155,13 +155,32 @@ describe('Auth Flow Integration Test', () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Sesión cerrada');
 
-    // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de logout:', logs.rows); // Depuración
     expect(logs.rows.some(log => log.event_type === eventTypes.LOGOUT)).toBe(true);
   });
 
   it('Verificar logs de usuario', async () => {
+    // Ejecutar acciones para generar logs
+    await request(index)
+      .post('/api/auth/login')
+      .send({ email: testEmail, password: testPassword }); // Genera PENDING_APPROVAL_LOGIN
+    await request(index)
+      .post('/api/auth/reset-password')
+      .send({ email: testEmail }); // Genera PASSWORD_RESET_REQUEST
+    const tokenReset = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
+    await request(index)
+      .post('/api/auth/new-password')
+      .send({ token: tokenReset, password: 'NewPass123!' }); // Genera PASSWORD_RESET_SUCCESS
+    await pool.query('UPDATE users SET is_approved = true WHERE id = $1', [userId]);
+    const loginRes = await request(index)
+      .post('/api/auth/login')
+      .send({ email: testEmail, password: 'NewPass123!' }); // Genera LOGIN
+    const logoutRes = await request(index)
+      .post('/api/auth/logout')
+      .set('Authorization', `Bearer ${loginRes.body.token}`)
+      .send(); // Genera LOGOUT
+
     const logsRes = await pool.query(
       'SELECT event_type FROM users_logs WHERE user_id = $1 ORDER BY created_at',
       [userId]
@@ -182,6 +201,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   let newUserEmail;
   let existingUserEmail;
   let token;
+  const JWT_SECRET = process.env.JWT_SECRET || 'testsecret'; // Coincide con .env.test
 
   beforeAll(async () => {
     googleClientMock = new OAuth2Client();
@@ -190,9 +210,10 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   });
 
   afterAll(async () => {
+    // Limpieza específica para usuarios de Google
     await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', ['google_%']);
     await pool.query('DELETE FROM users WHERE email LIKE $1', ['google_%']);
-    await pool.end();
+    // No cerrar el pool aquí, se maneja en setupTest_DB.js
   });
 
   beforeEach(() => {
