@@ -64,10 +64,6 @@ jobs:
           name: coverage
           path: server/coverage/
 
-      - name: Check coverage file
-        run: ls -l server/coverage/
-        working-directory: server
-
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@13a24e453e2e6262f3bb0c5fa8241031e637a028
         with:
