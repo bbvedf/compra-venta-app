@@ -56,7 +56,11 @@ jobs:
         env:
           DATABASE_URL: postgres://testuser:testpass@localhost:5433/db_test
           TEST_SUITE: authFlow
-      
+
+      - name: Check coverage file
+        run: ls -l server/coverage/
+        working-directory: server
+
       - name: Upload coverage
         if: success() || failure()
         uses: actions/upload-artifact@v4
