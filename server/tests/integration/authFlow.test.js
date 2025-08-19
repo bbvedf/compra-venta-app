@@ -301,13 +301,16 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
       .post('/api/auth/login')
       .send({ email: unknownEmail, password: '1234' });
 
-    console.log('Respuesta de login desconocido:', res.body); // Depuración
+    console.log('Respuesta de login desconocido:', res.body);
+    if (res.status === 500) {
+      console.error('Error 500 en login desconocido, posible problema con la tabla users_logs:', res.body);
+    }
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('Credenciales inválidas');
 
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id IS NULL AND details->>\'email\' = $1', [unknownEmail]);
     const logTypes = logs.rows.map(r => r.event_type);
-    console.log('Logs después de login desconocido:', logTypes); // Depuración
+    console.log('Logs después de login desconocido:', logTypes);
     expect(logTypes).toContain(eventTypes.SUSPICIOUS_LOGIN);
   });
 });
