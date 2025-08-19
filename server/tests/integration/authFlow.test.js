@@ -178,18 +178,25 @@ describe('Auth Flow Integration Test', () => {
   });
 
   it('Verificar logs de usuario', async () => {
-    // Ejecutar acciones para generar logs
     await request(index)
       .post('/api/auth/login')
       .send({ email: testEmail, password: testPassword }); // Genera PENDING_APPROVAL_LOGIN
     await request(index)
       .post('/api/auth/reset-password')
       .send({ email: testEmail }); // Genera PASSWORD_RESET_REQUEST
-    const tokenReset = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
+    const tokenReset = jwt.sign({ userId }, process.env.JWT_SECRET || 'testsecret', { expiresIn: '15m' });
     await request(index)
       .post('/api/auth/new-password')
       .send({ token: tokenReset, password: 'NewPass123!' }); // Genera PASSWORD_RESET_SUCCESS
     await pool.query('UPDATE users SET is_approved = true WHERE id = $1', [userId]);
+    const loginRes = await request(index)
+      .post('/api/auth/login')
+      .send({ email: testEmail, password: 'NewPass123!' }); // Genera LOGIN
+    const res = await request(index) // Usar 'res' en lugar de 'logoutRes'
+      .post('/api/auth/logout')
+      .set('Authorization', `Bearer ${loginRes.body.token}`)
+      .send(); // Genera LOGOUT
+    expect(res.status).toBe(200); // Verificar que el logout fue exitoso
 
     const logsRes = await pool.query(
       'SELECT event_type FROM users_logs WHERE user_id = $1 ORDER BY created_at',
@@ -197,7 +204,7 @@ describe('Auth Flow Integration Test', () => {
     );
 
     const logTypes = logsRes.rows.map(row => row.event_type);
-    console.log('Logs verificados:', logTypes); // Depuración
+    console.log('Logs verificados:', logTypes);
     expect(logTypes).toContain(eventTypes.PENDING_APPROVAL_LOGIN);
     expect(logTypes).toContain(eventTypes.PASSWORD_RESET_REQUEST);
     expect(logTypes).toContain(eventTypes.PASSWORD_RESET_SUCCESS);
@@ -219,10 +226,8 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   });
 
   afterAll(async () => {
-    // Limpieza específica para usuarios de Google
     await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', ['google_%']);
     await pool.query('DELETE FROM users WHERE email LIKE $1', ['google_%']);
-    // No cerrar el pool aquí, se maneja en setupTest_DB.js
   });
 
   beforeEach(() => {
@@ -238,12 +243,12 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
       .post('/api/auth/google')
       .send({ token: 'fake-google-token' });
 
-    console.log('Respuesta de registro Google:', res.body); // Depuración
+    console.log('Respuesta de registro Google:', res.body);
     expect(res.status).toBe(403);
     expect(res.body.requiresApproval).toBe(true);
 
     const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [newUserEmail]);
-    console.log('Usuario creado con Google:', userResult.rows); // Depuración
+    console.log('Usuario creado con Google:', userResult.rows);
     expect(userResult.rows.length).toBe(1);
   });
 
@@ -254,7 +259,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
       .post('/api/auth/google')
       .send({ token: 'invalid-google-token' });
 
-    console.log('Respuesta de login Google inválido:', res.body); // Depuración
+    console.log('Respuesta de login Google inválido:', res.body);
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('Token de Google inválido');
   });
@@ -274,7 +279,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
       .post('/api/auth/google')
       .send({ token: 'fake-google-token' });
 
-    console.log('Respuesta de login Google aprobado:', res.body); // Depuración
+    console.log('Respuesta de login Google aprobado:', res.body);
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe(existingUserEmail);
     token = res.body.token;
@@ -282,7 +287,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
 
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     const logTypes = logs.rows.map(r => r.event_type);
-    console.log('Logs después de login Google:', logTypes); // Depuración
+    console.log('Logs después de login Google:', logTypes);
     expect(logTypes).toContain(eventTypes.LOGIN_GOOGLE);
   });
 
@@ -294,9 +299,6 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
       .send({ email: unknownEmail, password: '1234' });
 
     console.log('Respuesta de login desconocido:', res.body);
-    if (res.status === 500) {
-      console.error('Error 500 en login desconocido, posible problema con la tabla users_logs:', res.body);
-    }
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('Credenciales inválidas');
 
