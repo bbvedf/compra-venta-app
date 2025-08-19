@@ -105,21 +105,37 @@ describe('Auth Flow Integration Test', () => {
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Contraseña actualizada');
 
+    // Verifica que la contraseña se haya actualizado
     const userCheck = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
     console.log('Contraseña después de reset:', userCheck.rows[0].password); // Depuración
     const isPasswordValid = await require('../../controllers/auth').__testHelpers.comparePassword('NewPass123!', userCheck.rows[0].password);
     expect(isPasswordValid).toBe(true);
 
+    // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de new-password:', logs.rows); // Depuración
     expect(logs.rows.some(log => log.event_type === eventTypes.PASSWORD_RESET_SUCCESS)).toBe(true);
   });
 
   it('Login aprobado después de cambiar contraseña', async () => {
+    // Asegurar que la contraseña se actualizó primero
+    const tokenReset = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
+    await request(index)
+      .post('/api/auth/new-password')
+      .send({ token: tokenReset, password: 'NewPass123!' });
+
+    // Verificar la contraseña antes del login
+    const userCheckBefore = await pool.query('SELECT password, is_approved FROM users WHERE id = $1', [userId]);
+    console.log('Usuario antes de login aprobado:', userCheckBefore.rows); // Depuración
+    expect(userCheckBefore.rows.length).toBe(1);
+    const isPasswordValid = await require('../../controllers/auth').__testHelpers.comparePassword('NewPass123!', userCheckBefore.rows[0].password);
+    expect(isPasswordValid).toBe(true); // Confirma que la contraseña es correcta
+
+    // Aprobar al usuario
     await pool.query('UPDATE users SET is_approved = true WHERE id = $1', [userId]);
-    const userCheck = await pool.query('SELECT is_approved FROM users WHERE id = $1', [userId]);
-    console.log('Usuario antes de login aprobado:', userCheck.rows); // Depuración
-    expect(userCheck.rows[0].is_approved).toBe(true);
+    const userCheckAfter = await pool.query('SELECT is_approved FROM users WHERE id = $1', [userId]);
+    console.log('Usuario después de aprobar:', userCheckAfter.rows); // Depuración
+    expect(userCheckAfter.rows[0].is_approved).toBe(true);
 
     const res = await request(index)
       .post('/api/auth/login')
@@ -131,6 +147,7 @@ describe('Auth Flow Integration Test', () => {
     token = res.body.token;
     expect(token).toBeDefined();
 
+    // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de login aprobado:', logs.rows); // Depuración
     expect(logs.rows.some(log => log.event_type === eventTypes.LOGIN)).toBe(true);
