@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../../index');
 const pool = require('../../db');
-const { eventTypes } = require('../../utils/constants');
+const { eventTypes } = require('../../constants');
 
 let token;
 const testEmail = 'testuser@example.com';
