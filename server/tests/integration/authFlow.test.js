@@ -11,9 +11,11 @@ const testPassword = 'Password123!';
 let token;
 
 beforeAll(async () => {
+  // Limpiar tablas antes de test
   await pool.query('DELETE FROM logs');
   await pool.query('DELETE FROM users');
 
+  // Crear usuario pendiente
   const hashedPassword = await bcrypt.hash(testPassword, 10);
   await pool.query(
     'INSERT INTO users (email, password, status) VALUES ($1, $2, $3)',
@@ -22,6 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // Limpiar tablas después de test
   await pool.query('DELETE FROM logs');
   await pool.query('DELETE FROM users');
   await pool.end();
@@ -37,6 +40,7 @@ describe('Auth Flow Integration Test', () => {
     expect(res.status).toBe(403);
     expect(res.body.requiresApproval).toBe(true);
 
+    // Registrar log manualmente
     await pool.query(
       'INSERT INTO logs (user_id, event_type) SELECT id, $1 FROM users WHERE email=$2',
       [eventTypes.PENDING_APPROVAL_LOGIN, testEmail]
