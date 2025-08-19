@@ -1,10 +1,10 @@
 // tests/integration/authFlow.test.js
 
 const request = require('supertest');
-const app = require('../../index');
+const index = require('../../index'); // app principal
 const pool = require('../../db');
 const jwt = require('jsonwebtoken');
-const eventTypes = require('../../constants/eventTypes');
+const eventTypes = require('../../constants/eventTypes'); // ruta correcta
 const { OAuth2Client } = require('google-auth-library');
 
 jest.mock('../../utils/logger', () => ({
@@ -13,7 +13,7 @@ jest.mock('../../utils/logger', () => ({
   error: jest.fn(),
 }));
 
-jest.mock('google-auth-library'); // usa __mocks__/google-auth-library.js
+jest.mock('google-auth-library'); // carga el mock de __mocks__
 
 describe('Auth Flow Integration Test', () => {
   let testEmail;
@@ -34,7 +34,7 @@ describe('Auth Flow Integration Test', () => {
   });
 
   it('Registro manual', async () => {
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/register')
       .send({ username: 'testuser', email: testEmail, password: testPassword });
 
@@ -43,17 +43,16 @@ describe('Auth Flow Integration Test', () => {
   });
 
   it('Login con usuario no aprobado', async () => {
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/login')
       .send({ email: testEmail, password: testPassword });
 
-    // puede ser 401 o 403 según tu auth, ajustamos para CI
-    expect([401, 403]).toContain(res.status);
+    expect(res.status).toBe(403);
     expect(res.body.requiresApproval).toBe(true);
   });
 
   it('Reset password request', async () => {
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/reset-password')
       .send({ email: testEmail });
 
@@ -65,7 +64,7 @@ describe('Auth Flow Integration Test', () => {
     const userId = dbUser.rows[0].id;
     const tokenReset = jwt.sign({ userId }, process.env.JWT_SECRET || 'mi_secreto', { expiresIn: '15m' });
 
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/new-password')
       .send({ token: tokenReset, password: 'NewPass123!' });
 
@@ -75,7 +74,7 @@ describe('Auth Flow Integration Test', () => {
   it('Login aprobado después de cambiar contraseña', async () => {
     await pool.query('UPDATE users SET is_approved = true WHERE email = $1', [testEmail]);
 
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/login')
       .send({ email: testEmail, password: 'NewPass123!' });
 
@@ -86,7 +85,7 @@ describe('Auth Flow Integration Test', () => {
   });
 
   it('Logout', async () => {
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/logout')
       .set('Authorization', `Bearer ${token}`)
       .send();
@@ -111,12 +110,13 @@ describe('Auth Flow Integration Test', () => {
 });
 
 describe('Auth Flow Google + Usuarios desconocidos', () => {
-  const mockClient = OAuth2Client(); // siempre el mismo mClient
+  let googleClientMock;
   let newUserEmail;
   let existingUserEmail;
   let token;
 
   beforeAll(() => {
+    googleClientMock = new OAuth2Client();
     newUserEmail = `google_new_${Date.now()}@example.com`;
     existingUserEmail = `google_existing_${Date.now()}@example.com`;
   });
@@ -131,15 +131,15 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   });
 
   it('Registro vía Google (usuario nuevo)', async () => {
-    mockClient.verifyIdToken.mockResolvedValueOnce({
+    googleClientMock.verifyIdToken.mockResolvedValueOnce({
       getPayload: () => ({ email: newUserEmail, name: 'GoogleUserNew' }),
     });
 
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/google')
       .send({ token: 'fake-google-token' });
 
-    expect([401, 403]).toContain(res.status);
+    expect(res.status).toBe(403);
     expect(res.body.requiresApproval).toBe(true);
 
     const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [newUserEmail]);
@@ -147,9 +147,9 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   });
 
   it('Login vía Google con token inválido', async () => {
-    mockClient.verifyIdToken.mockRejectedValueOnce(new Error('Invalid token'));
+    googleClientMock.verifyIdToken.mockRejectedValueOnce(new Error('Invalid token'));
 
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/google')
       .send({ token: 'invalid-google-token' });
 
@@ -167,11 +167,11 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
     );
     const userId = insertRes.rows[0].id;
 
-    mockClient.verifyIdToken.mockResolvedValueOnce({
+    googleClientMock.verifyIdToken.mockResolvedValueOnce({
       getPayload: () => ({ email: existingUserEmail, name: 'GoogleUserExisting' }),
     });
 
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/google')
       .send({ token: 'fake-google-token' });
 
@@ -188,7 +188,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   it('Usuario desconocido intenta login normal', async () => {
     const unknownEmail = `unknown_${Date.now()}@example.com`;
 
-    const res = await request(app)
+    const res = await request(index)
       .post('/api/auth/login')
       .send({ email: unknownEmail, password: '1234' });
 
