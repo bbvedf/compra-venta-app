@@ -37,3 +37,5 @@ jobs:
       - name: Run Integration Tests
         run: npm run test:integration
         working-directory: server
+      - name: Stop DB
+        run: docker-compose -f docker-compose.test.yml down
