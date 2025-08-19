@@ -73,10 +73,10 @@ Dominio configurado: https://ryzenpc.mooo.com
 
 
 ## 📚 Documentación extendida  
-- [Guía de contribución](CONTRIBUTING.md)  
-- [Desarrollo y scripts](USAGE.md)  
-- [Testing y mocks](TESTING.md)  
-- [Infraestructura y despliegue](INFRASTRUCTURE.md)  
+- [Guía de contribución](CONTRIBUTING.md)
+- [Desarrollo y scripts](USAGE.md)
+- [Testing y mocks](TESTING.md)
+- [Infraestructura y despliegue](INFRASTRUCTURE.md)
 - [Endpoints y funcionalidades](API.md)
 
 ---
