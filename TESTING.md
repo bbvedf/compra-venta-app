@@ -4,7 +4,7 @@
 
 Este documento cubre cómo se ejecutan y estructuran los tests del proyecto.
 
----
+
 
 ## ⚡ Tecnologías
 - **Jest** → Framework principal de testing.
@@ -13,7 +13,7 @@ Este documento cubre cómo se ejecutan y estructuran los tests del proyecto.
   - `google-auth-library` → Simula OAuth2Client.verifyIdToken().
   - `nodemailer` → Simula envío de emails.
 
----
+
 
 ## 📂 Estructura
 server/tests/  
@@ -22,7 +22,7 @@ server/tests/
 │ ├── google-auth-library.js  
 │ └── nodemailer.js  
 
----
+
 
 ## 🚀 Ejecución
 ```bash
@@ -32,7 +32,7 @@ npm run test
 La base de datos se inicializa y limpia automáticamente.  
 Los logs de usuario se validan con consultas a users_logs.  
 
----
+
 
 
 ✅ Cobertura
