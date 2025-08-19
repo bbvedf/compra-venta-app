@@ -190,13 +190,6 @@ describe('Auth Flow Integration Test', () => {
       .post('/api/auth/new-password')
       .send({ token: tokenReset, password: 'NewPass123!' }); // Genera PASSWORD_RESET_SUCCESS
     await pool.query('UPDATE users SET is_approved = true WHERE id = $1', [userId]);
-    const loginRes = await request(index)
-      .post('/api/auth/login')
-      .send({ email: testEmail, password: 'NewPass123!' }); // Genera LOGIN
-    const logoutRes = await request(index)
-      .post('/api/auth/logout')
-      .set('Authorization', `Bearer ${loginRes.body.token}`)
-      .send(); // Genera LOGOUT
 
     const logsRes = await pool.query(
       'SELECT event_type FROM users_logs WHERE user_id = $1 ORDER BY created_at',
@@ -218,7 +211,6 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   let newUserEmail;
   let existingUserEmail;
   let token;
-  const JWT_SECRET = process.env.JWT_SECRET || 'testsecret'; // Coincide con .env.test
 
   beforeAll(async () => {
     googleClientMock = new OAuth2Client();

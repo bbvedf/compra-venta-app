@@ -10,7 +10,10 @@ beforeAll(async () => {
       break;
     } catch (err) {
       retries -= 1;
-      console.log('Waiting for DB... retrying');
+      console.log('Waiting for DB... retrying', err.message); // Añadir mensaje de error
+      if (retries === 0) {
+        throw new Error('Failed to connect to database after retries');
+      }
       await new Promise(r => setTimeout(r, 1000));
     }
   }
