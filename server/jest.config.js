@@ -12,7 +12,7 @@ module.exports = {
     '/.vscode-server/',
     '/.venv/',
     '/client/',
-    '/login-roles/'
+    '/login-roles/',
   ],
   collectCoverage: true,
   collectCoverageFrom: [
@@ -22,7 +22,7 @@ module.exports = {
     '!tests/**', // Excluye server/tests/
     '!__mocks__/**', // Excluye server/__mocks__/
     '!coverage/**', // Excluye server/coverage/
-    '!jest.config.js' // Excluye server/jest.config.js
+    '!jest.config.js', // Excluye server/jest.config.js
   ],
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['lcov', 'text', 'clover'],
@@ -31,8 +31,8 @@ module.exports = {
       statements: 0,
       branches: 0,
       functions: 0,
-      lines: 0
-    }
+      lines: 0,
+    },
   },
-  verbose: true
+  verbose: true,
 };

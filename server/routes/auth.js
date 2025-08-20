@@ -6,7 +6,6 @@ const router = express.Router();
 const authController = require('../controllers/auth');
 const { verifyToken } = require('../middleware/authMiddleware');
 
-
 // Registro y login
 router.post('/register', authController.register);
 router.post('/login', authController.login);
@@ -29,8 +28,8 @@ router.get('/verify', verifyToken, (req, res) => {
       id: req.user.userId,
       email: req.user.email,
       role: req.user.role,
-      isApproved: req.user.isApproved
-    }
+      isApproved: req.user.isApproved,
+    },
   });
 });
 

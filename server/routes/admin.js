@@ -3,9 +3,13 @@ const { Router } = express;
 const router = Router();
 const pool = require('../db');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
-const { sendUserApprovedEmail, sendUserRejectedEmail, sendCalculationEmail, sendMortgageEmail } = require('../utils/emailSender');
+const {
+  sendUserApprovedEmail,
+  sendUserRejectedEmail,
+  sendCalculationEmail,
+  sendMortgageEmail,
+} = require('../utils/emailSender');
 const logger = require('../utils/logger');
-
 
 /**
  * @route GET /api/admin/users
@@ -13,8 +17,8 @@ const logger = require('../utils/logger');
  * @access Private
  */
 router.get('/users', verifyToken, isAdmin, async (req, res) => {
-    try {
-        const query = `
+  try {
+    const query = `
             SELECT 
                 id,
                 email,
@@ -24,12 +28,12 @@ router.get('/users', verifyToken, isAdmin, async (req, res) => {
             FROM users
             ORDER BY created_at DESC
             `;
-        const result = await pool.query(query);
-        res.status(200).json({ users: result.rows });
-    } catch (error) {
-        logger.error('Error en GET /api/admin/users:', error);
-        res.status(500).json({ error: 'Error al obtener usuarios' });
-    }
+    const result = await pool.query(query);
+    res.status(200).json({ users: result.rows });
+  } catch (error) {
+    logger.error('Error en GET /api/admin/users:', error);
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
 });
 
 /**
@@ -38,46 +42,45 @@ router.get('/users', verifyToken, isAdmin, async (req, res) => {
  * @access Private
  */
 router.patch('/users/:id', verifyToken, isAdmin, async (req, res) => {
-    const { id } = req.params;
-    const { role, isApproved } = req.body; // Ojo: "isApproved" (en DB) vs "isApproved" (body)
+  const { id } = req.params;
+  const { role, isApproved } = req.body; // Ojo: "isApproved" (en DB) vs "isApproved" (body)
 
-    try {
-        // 1. Obtenemos el usuario actual (necesitamos su email y estado de aprobación)
-        const currentUser = await pool.query(
-            'SELECT email, is_approved FROM users WHERE id = $1',
-            [id]
-        );
+  try {
+    // 1. Obtenemos el usuario actual (necesitamos su email y estado de aprobación)
+    const currentUser = await pool.query('SELECT email, is_approved FROM users WHERE id = $1', [
+      id,
+    ]);
 
-        if (currentUser.rows.length === 0) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
+    if (currentUser.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
 
-        const { email, is_approved: currentApprovalStatus } = currentUser.rows[0];
+    const { email, is_approved: currentApprovalStatus } = currentUser.rows[0];
 
-        // 2. Actualizamos el usuario
-        await pool.query(
-            `UPDATE users 
+    // 2. Actualizamos el usuario
+    await pool.query(
+      `UPDATE users 
              SET 
                 is_approved = COALESCE($1, is_approved),
                 role = COALESCE($2, role)
              WHERE id = $3`,
-            [isApproved, role, id]
-        );
+      [isApproved, role, id],
+    );
 
-        // 3. Verificamos si isApproved cambió (solo si se envió en el body)
-        if (isApproved !== undefined && isApproved !== currentApprovalStatus) {
-            if (isApproved) {
-                await sendUserApprovedEmail(email); // Email de aprobación
-            } else {
-                await sendUserRejectedEmail(email); // Email de cancelación
-            }
-        }
-
-        res.status(200).json({ success: true });
-    } catch (error) {
-        logger.error('Error al actualizar usuario:', error);
-        res.status(500).json({ error: 'Error al actualizar usuario' });
+    // 3. Verificamos si isApproved cambió (solo si se envió en el body)
+    if (isApproved !== undefined && isApproved !== currentApprovalStatus) {
+      if (isApproved) {
+        await sendUserApprovedEmail(email); // Email de aprobación
+      } else {
+        await sendUserRejectedEmail(email); // Email de cancelación
+      }
     }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    logger.error('Error al actualizar usuario:', error);
+    res.status(500).json({ error: 'Error al actualizar usuario' });
+  }
 });
 
 /**
@@ -86,62 +89,59 @@ router.patch('/users/:id', verifyToken, isAdmin, async (req, res) => {
  * @access Private
  */
 router.delete('/users/:id', verifyToken, isAdmin, async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        // 1. Verificamos primero que el usuario existe
-        const userCheck = await pool.query(
-            'SELECT id FROM users WHERE id = $1',
-            [id]
-        );
+  try {
+    // 1. Verificamos primero que el usuario existe
+    const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
 
-        if (userCheck.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Usuario no encontrado'
-            });
-        }
-
-        // 2. Eliminación directa (ya no necesitamos transacción)
-        await pool.query('DELETE FROM users WHERE id = $1', [id]);
-
-        // 3. Respuesta JSON consistente
-        res.status(200).json({
-            success: true,
-            message: 'Usuario eliminado correctamente'
-        });
-    } catch (error) {
-        logger.error('Error al eliminar usuario:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error interno del servidor',
-            details: error.message
-        });
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Usuario no encontrado',
+      });
     }
-});
 
+    // 2. Eliminación directa (ya no necesitamos transacción)
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+
+    // 3. Respuesta JSON consistente
+    res.status(200).json({
+      success: true,
+      message: 'Usuario eliminado correctamente',
+    });
+  } catch (error) {
+    logger.error('Error al eliminar usuario:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor',
+      details: error.message,
+    });
+  }
+});
 
 router.post('/send-calculation', verifyToken, isAdmin, async (req, res) => {
-    try {
-        const userEmail = req.user.email;
-        const calculationData = req.body;
+  try {
+    const userEmail = req.user.email;
+    const calculationData = req.body;
 
-        logger.info('req.user:', req.user);
-        logger.info('req.body:', req.body);
+    logger.info('req.user:', req.user);
+    logger.info('req.body:', req.body);
 
-        logger.info('Body keys:', Object.keys(req.body));
-        logger.info('chartDataUrl length at route:', req.body.chartDataUrl ? req.body.chartDataUrl.length : 'no data');
+    logger.info('Body keys:', Object.keys(req.body));
+    logger.info(
+      'chartDataUrl length at route:',
+      req.body.chartDataUrl ? req.body.chartDataUrl.length : 'no data',
+    );
 
+    await sendCalculationEmail(userEmail, calculationData, req.body.chartDataUrl);
 
-        await sendCalculationEmail(userEmail, calculationData, req.body.chartDataUrl);
-
-        res.json({ message: 'Correo enviado correctamente' });
-    } catch (err) {
-        logger.error('Error enviando correo de cálculo:', err);
-        res.status(500).json({ message: 'Error enviando el correo' });
-    }
+    res.json({ message: 'Correo enviado correctamente' });
+  } catch (err) {
+    logger.error('Error enviando correo de cálculo:', err);
+    res.status(500).json({ message: 'Error enviando el correo' });
+  }
 });
-
 
 router.post('/send-mortgage', verifyToken, isAdmin, async (req, res) => {
   try {
@@ -150,7 +150,10 @@ router.post('/send-mortgage', verifyToken, isAdmin, async (req, res) => {
 
     logger.info('User:', req.user);
     logger.info('Body keys:', Object.keys(mortgageData));
-    logger.info('chartDataUrl length:', mortgageData.chartDataUrl ? mortgageData.chartDataUrl.length : 'no data');
+    logger.info(
+      'chartDataUrl length:',
+      mortgageData.chartDataUrl ? mortgageData.chartDataUrl.length : 'no data',
+    );
 
     await sendMortgageEmail(userEmail, mortgageData);
 
@@ -160,12 +163,5 @@ router.post('/send-mortgage', verifyToken, isAdmin, async (req, res) => {
     res.status(500).json({ message: 'Error enviando el correo' });
   }
 });
-
-
-
-
-
-
-
 
 module.exports = router;

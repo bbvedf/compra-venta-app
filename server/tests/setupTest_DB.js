@@ -14,7 +14,7 @@ beforeAll(async () => {
       if (retries === 0) {
         throw new Error('Failed to connect to database after retries');
       }
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
 
@@ -53,8 +53,8 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // Truncar antes de cada test
-  await pool.query("TRUNCATE users_logs RESTART IDENTITY CASCADE;");
-  await pool.query("TRUNCATE users RESTART IDENTITY CASCADE;");
+  await pool.query('TRUNCATE users_logs RESTART IDENTITY CASCADE;');
+  await pool.query('TRUNCATE users RESTART IDENTITY CASCADE;');
 });
 
 afterAll(async () => {

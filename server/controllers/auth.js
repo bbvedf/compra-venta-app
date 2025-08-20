@@ -14,7 +14,6 @@ const { sendPasswordResetEmail } = require('../utils/emailSender');
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const logger = require('../utils/logger');
 
-
 // Generar token JWT
 const generateToken = (user) => {
   return jwt.sign(
@@ -22,13 +21,12 @@ const generateToken = (user) => {
       userId: user.id,
       email: user.email,
       role: user.role,
-      isApproved: user.isApproved
+      isApproved: user.isApproved,
     },
     JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '1h' },
   );
 };
-
 
 exports.register = async (req, res) => {
   try {
@@ -44,24 +42,26 @@ exports.register = async (req, res) => {
       `INSERT INTO users (username, email, password, is_approved, role)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, email, username, is_approved AS "isApproved", role`,
-      [username, email, hashedPassword, false, 'basic']
+      [username, email, hashedPassword, false, 'basic'],
     );
 
     await sendNewUserNotificationEmail({ username, email });
-    await userLogger.logUserEvent(newUser.rows[0].id, eventTypes.SIGNUP_MANUAL, { email, requiresApproval: true });
+    await userLogger.logUserEvent(newUser.rows[0].id, eventTypes.SIGNUP_MANUAL, {
+      email,
+      requiresApproval: true,
+    });
 
     res.status(201).json({
       message: 'Registro exitoso. Espera aprobación.',
       email: newUser.rows[0].email,
       username: newUser.rows[0].username,
-      requiresApproval: true
+      requiresApproval: true,
     });
   } catch (error) {
     logger.error('Error en registro:', error);
     res.status(500).json({ message: 'Error en el servidor' });
   }
 };
-
 
 exports.login = async (req, res) => {
   try {
@@ -70,7 +70,7 @@ exports.login = async (req, res) => {
     const user = await pool.query(
       `SELECT id, email, username, password, is_approved AS "isApproved", role
        FROM users WHERE email = $1`,
-      [email]
+      [email],
     );
 
     if (user.rows.length === 0) {
@@ -89,7 +89,7 @@ exports.login = async (req, res) => {
       return res.status(403).json({
         requiresApproval: true,
         email: user.rows[0].email,
-        message: 'Cuenta pendiente de aprobación'
+        message: 'Cuenta pendiente de aprobación',
       });
     }
 
@@ -103,16 +103,14 @@ exports.login = async (req, res) => {
         id: user.rows[0].id,
         email: user.rows[0].email,
         username: user.rows[0].username,
-        role: user.rows[0].role
-      }
+        role: user.rows[0].role,
+      },
     });
   } catch (error) {
     logger.error('Error en login:', error);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 };
-
-
 
 exports.googleLogin = async (req, res) => {
   const { token } = req.body;
@@ -127,10 +125,10 @@ exports.googleLogin = async (req, res) => {
     const email = payload.email;
     const name = payload.name || email.split('@')[0];
 
-    let userResult = await pool.query(
+    const userResult = await pool.query(
       `SELECT id, email, username, is_approved AS "isApproved", role 
        FROM users WHERE email = $1`,
-      [email]
+      [email],
     );
 
     let user;
@@ -140,7 +138,7 @@ exports.googleLogin = async (req, res) => {
         `INSERT INTO users (username, email, password, role, is_approved)
          VALUES ($1, $2, '', 'basic', false)
          RETURNING id, email, username, is_approved AS "isApproved", role`,
-        [name, email]
+        [name, email],
       );
 
       user = insertResult.rows[0];
@@ -156,7 +154,7 @@ exports.googleLogin = async (req, res) => {
         requiresApproval: true,
         email: user.email,
         userData: { email: user.email, username: user.username },
-        message: 'Cuenta pendiente de aprobación'
+        message: 'Cuenta pendiente de aprobación',
       });
     }
 
@@ -170,8 +168,8 @@ exports.googleLogin = async (req, res) => {
         id: user.id,
         email: user.email,
         username: user.username,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     logger.error('Error en login con Google:', error);
@@ -179,7 +177,6 @@ exports.googleLogin = async (req, res) => {
     res.status(401).json({ error: 'Token de Google inválido' });
   }
 };
-
 
 // Logout
 exports.logout = async (req, res) => {
@@ -200,15 +197,16 @@ exports.resetPasswordRequest = async (req, res) => {
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (user.rows.length === 0) {
       // Usuario no encontrado -> log de alerta
-      await userLogger.logUserEvent(null, eventTypes.SUSPICIOUS_LOGIN, { email, action: 'reset_password' });
+      await userLogger.logUserEvent(null, eventTypes.SUSPICIOUS_LOGIN, {
+        email,
+        action: 'reset_password',
+      });
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const resetToken = jwt.sign(
-      { userId: user.rows[0].id },
-      process.env.JWT_SECRET,
-      { expiresIn: '15m' }
-    );
+    const resetToken = jwt.sign({ userId: user.rows[0].id }, process.env.JWT_SECRET, {
+      expiresIn: '15m',
+    });
 
     const resetLink = `${FRONTEND_URL}/new-password/${resetToken}`;
     await sendPasswordResetEmail(email, resetLink);
@@ -223,7 +221,6 @@ exports.resetPasswordRequest = async (req, res) => {
   }
 };
 
-
 // Establecer nueva contraseña
 exports.setNewPassword = async (req, res) => {
   const { token, password } = req.body;
@@ -232,13 +229,15 @@ exports.setNewPassword = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await pool.query(
-      'UPDATE users SET password = $1 WHERE id = $2',
-      [hashedPassword, decoded.userId]
-    );
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [
+      hashedPassword,
+      decoded.userId,
+    ]);
 
     // Log del cambio de contraseña
-    await userLogger.logUserEvent(decoded.userId, eventTypes.PASSWORD_RESET_SUCCESS, { action: 'new_password' });
+    await userLogger.logUserEvent(decoded.userId, eventTypes.PASSWORD_RESET_SUCCESS, {
+      action: 'new_password',
+    });
 
     res.json({ message: 'Contraseña actualizada' });
   } catch (err) {
@@ -252,5 +251,5 @@ exports.setNewPassword = async (req, res) => {
 exports.__testHelpers = {
   generateToken,
   hashPassword: (pwd) => bcrypt.hash(pwd, 10),
-  comparePassword: (pwd, hash) => bcrypt.compare(pwd, hash)
+  comparePassword: (pwd, hash) => bcrypt.compare(pwd, hash),
 };

@@ -15,7 +15,7 @@ jest.mock('google-auth-library'); // carga el mock de __mocks__
 
 describe('Auth Flow Integration Test', () => {
   let testEmail;
-  let testPassword = 'Test123!';
+  const testPassword = 'Test123!';
   let token;
   let userId;
   const JWT_SECRET = process.env.JWT_SECRET || 'testsecret'; // Coincide con .env.test
@@ -29,10 +29,20 @@ describe('Auth Flow Integration Test', () => {
     testEmail = `test_${Date.now()}@example.com`;
     const res = await pool.query(
       'INSERT INTO users (username, email, password, is_approved, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, is_approved',
-      ['testuser', testEmail, await require('../../controllers/auth').__testHelpers.hashPassword(testPassword), false, 'basic']
+      [
+        'testuser',
+        testEmail,
+        await require('../../controllers/auth').__testHelpers.hashPassword(testPassword),
+        false,
+        'basic',
+      ],
     );
     userId = res.rows[0].id;
-    console.log('Usuario creado:', { id: userId, email: testEmail, is_approved: res.rows[0].is_approved }); // Depuración
+    console.log('Usuario creado:', {
+      id: userId,
+      email: testEmail,
+      is_approved: res.rows[0].is_approved,
+    }); // Depuración
     expect(res.rows[0].is_approved).toBe(false); // Verifica estado inicial
   });
 
@@ -57,7 +67,9 @@ describe('Auth Flow Integration Test', () => {
   });
 
   it('Login con usuario no aprobado', async () => {
-    const userCheck = await pool.query('SELECT is_approved FROM users WHERE email = $1', [testEmail]);
+    const userCheck = await pool.query('SELECT is_approved FROM users WHERE email = $1', [
+      testEmail,
+    ]);
     console.log('Usuario antes de login:', userCheck.rows); // Depuración
     expect(userCheck.rows.length).toBe(1);
     expect(userCheck.rows[0].is_approved).toBe(false);
@@ -73,7 +85,9 @@ describe('Auth Flow Integration Test', () => {
 
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de login no aprobado:', logs.rows); // Depuración
-    expect(logs.rows.some(log => log.event_type === eventTypes.PENDING_APPROVAL_LOGIN)).toBe(true);
+    expect(logs.rows.some((log) => log.event_type === eventTypes.PENDING_APPROVAL_LOGIN)).toBe(
+      true,
+    );
   });
 
   it('Reset password request', async () => {
@@ -81,9 +95,7 @@ describe('Auth Flow Integration Test', () => {
     console.log('Usuario antes de reset:', userCheck.rows); // Depuración
     expect(userCheck.rows.length).toBe(1);
 
-    const res = await request(index)
-      .post('/api/auth/reset-password')
-      .send({ email: testEmail });
+    const res = await request(index).post('/api/auth/reset-password').send({ email: testEmail });
 
     console.log('Respuesta de reset-password:', res.body); // Depuración
     expect(res.status).toBe(200);
@@ -91,7 +103,9 @@ describe('Auth Flow Integration Test', () => {
 
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de reset:', logs.rows); // Depuración
-    expect(logs.rows.some(log => log.event_type === eventTypes.PASSWORD_RESET_REQUEST)).toBe(true);
+    expect(logs.rows.some((log) => log.event_type === eventTypes.PASSWORD_RESET_REQUEST)).toBe(
+      true,
+    );
   });
 
   it('Establecer nueva contraseña', async () => {
@@ -108,13 +122,18 @@ describe('Auth Flow Integration Test', () => {
     // Verifica que la contraseña se haya actualizado
     const userCheck = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
     console.log('Contraseña después de reset:', userCheck.rows[0].password); // Depuración
-    const isPasswordValid = await require('../../controllers/auth').__testHelpers.comparePassword('NewPass123!', userCheck.rows[0].password);
+    const isPasswordValid = await require('../../controllers/auth').__testHelpers.comparePassword(
+      'NewPass123!',
+      userCheck.rows[0].password,
+    );
     expect(isPasswordValid).toBe(true);
 
     // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de new-password:', logs.rows); // Depuración
-    expect(logs.rows.some(log => log.event_type === eventTypes.PASSWORD_RESET_SUCCESS)).toBe(true);
+    expect(logs.rows.some((log) => log.event_type === eventTypes.PASSWORD_RESET_SUCCESS)).toBe(
+      true,
+    );
   });
 
   it('Login aprobado después de cambiar contraseña', async () => {
@@ -125,15 +144,23 @@ describe('Auth Flow Integration Test', () => {
       .send({ token: tokenReset, password: 'NewPass123!' });
 
     // Verificar la contraseña antes del login
-    const userCheckBefore = await pool.query('SELECT password, is_approved FROM users WHERE id = $1', [userId]);
+    const userCheckBefore = await pool.query(
+      'SELECT password, is_approved FROM users WHERE id = $1',
+      [userId],
+    );
     console.log('Usuario antes de login aprobado:', userCheckBefore.rows); // Depuración
     expect(userCheckBefore.rows.length).toBe(1);
-    const isPasswordValid = await require('../../controllers/auth').__testHelpers.comparePassword('NewPass123!', userCheckBefore.rows[0].password);
+    const isPasswordValid = await require('../../controllers/auth').__testHelpers.comparePassword(
+      'NewPass123!',
+      userCheckBefore.rows[0].password,
+    );
     expect(isPasswordValid).toBe(true); // Confirma que la contraseña es correcta
 
     // Aprobar al usuario
     await pool.query('UPDATE users SET is_approved = true WHERE id = $1', [userId]);
-    const userCheckAfter = await pool.query('SELECT is_approved FROM users WHERE id = $1', [userId]);
+    const userCheckAfter = await pool.query('SELECT is_approved FROM users WHERE id = $1', [
+      userId,
+    ]);
     console.log('Usuario después de aprobar:', userCheckAfter.rows); // Depuración
     expect(userCheckAfter.rows[0].is_approved).toBe(true);
 
@@ -150,7 +177,7 @@ describe('Auth Flow Integration Test', () => {
     // Verifica que el log se haya creado
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de login aprobado:', logs.rows); // Depuración
-    expect(logs.rows.some(log => log.event_type === eventTypes.LOGIN)).toBe(true);
+    expect(logs.rows.some((log) => log.event_type === eventTypes.LOGIN)).toBe(true);
   });
 
   it('Logout', async () => {
@@ -174,17 +201,15 @@ describe('Auth Flow Integration Test', () => {
 
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
     console.log('Logs después de logout:', logs.rows); // Depuración
-    expect(logs.rows.some(log => log.event_type === eventTypes.LOGOUT)).toBe(true);
+    expect(logs.rows.some((log) => log.event_type === eventTypes.LOGOUT)).toBe(true);
   });
 
   it('Verificar logs de usuario', async () => {
-    await request(index)
-      .post('/api/auth/login')
-      .send({ email: testEmail, password: testPassword }); // Genera PENDING_APPROVAL_LOGIN
-    await request(index)
-      .post('/api/auth/reset-password')
-      .send({ email: testEmail }); // Genera PASSWORD_RESET_REQUEST
-    const tokenReset = jwt.sign({ userId }, process.env.JWT_SECRET || 'testsecret', { expiresIn: '15m' });
+    await request(index).post('/api/auth/login').send({ email: testEmail, password: testPassword }); // Genera PENDING_APPROVAL_LOGIN
+    await request(index).post('/api/auth/reset-password').send({ email: testEmail }); // Genera PASSWORD_RESET_REQUEST
+    const tokenReset = jwt.sign({ userId }, process.env.JWT_SECRET || 'testsecret', {
+      expiresIn: '15m',
+    });
     await request(index)
       .post('/api/auth/new-password')
       .send({ token: tokenReset, password: 'NewPass123!' }); // Genera PASSWORD_RESET_SUCCESS
@@ -200,10 +225,10 @@ describe('Auth Flow Integration Test', () => {
 
     const logsRes = await pool.query(
       'SELECT event_type FROM users_logs WHERE user_id = $1 ORDER BY created_at',
-      [userId]
+      [userId],
     );
 
-    const logTypes = logsRes.rows.map(row => row.event_type);
+    const logTypes = logsRes.rows.map((row) => row.event_type);
     console.log('Logs verificados:', logTypes);
     expect(logTypes).toContain(eventTypes.PENDING_APPROVAL_LOGIN);
     expect(logTypes).toContain(eventTypes.PASSWORD_RESET_REQUEST);
@@ -226,7 +251,10 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   });
 
   afterAll(async () => {
-    await pool.query('DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', ['google_%']);
+    await pool.query(
+      'DELETE FROM users_logs WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)',
+      ['google_%'],
+    );
     await pool.query('DELETE FROM users WHERE email LIKE $1', ['google_%']);
   });
 
@@ -239,9 +267,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
       getPayload: () => ({ email: newUserEmail, name: 'GoogleUserNew' }),
     });
 
-    const res = await request(index)
-      .post('/api/auth/google')
-      .send({ token: 'fake-google-token' });
+    const res = await request(index).post('/api/auth/google').send({ token: 'fake-google-token' });
 
     console.log('Respuesta de registro Google:', res.body);
     expect(res.status).toBe(403);
@@ -267,7 +293,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
   it('Login vía Google (usuario aprobado)', async () => {
     const insertRes = await pool.query(
       'INSERT INTO users (username, email, password, role, is_approved) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      ['GoogleUserExisting', existingUserEmail, '', 'basic', true]
+      ['GoogleUserExisting', existingUserEmail, '', 'basic', true],
     );
     const userId = insertRes.rows[0].id;
 
@@ -275,9 +301,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
       getPayload: () => ({ email: existingUserEmail, name: 'GoogleUserExisting' }),
     });
 
-    const res = await request(index)
-      .post('/api/auth/google')
-      .send({ token: 'fake-google-token' });
+    const res = await request(index).post('/api/auth/google').send({ token: 'fake-google-token' });
 
     console.log('Respuesta de login Google aprobado:', res.body);
     expect(res.status).toBe(200);
@@ -286,7 +310,7 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
     expect(token).toBeDefined();
 
     const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id = $1', [userId]);
-    const logTypes = logs.rows.map(r => r.event_type);
+    const logTypes = logs.rows.map((r) => r.event_type);
     console.log('Logs después de login Google:', logTypes);
     expect(logTypes).toContain(eventTypes.LOGIN_GOOGLE);
   });
@@ -302,8 +326,11 @@ describe('Auth Flow Google + Usuarios desconocidos', () => {
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('Credenciales inválidas');
 
-    const logs = await pool.query('SELECT event_type FROM users_logs WHERE user_id IS NULL AND details->>\'email\' = $1', [unknownEmail]);
-    const logTypes = logs.rows.map(r => r.event_type);
+    const logs = await pool.query(
+      "SELECT event_type FROM users_logs WHERE user_id IS NULL AND details->>'email' = $1",
+      [unknownEmail],
+    );
+    const logTypes = logs.rows.map((r) => r.event_type);
     console.log('Logs después de login desconocido:', logTypes);
     expect(logTypes).toContain(eventTypes.SUSPICIOUS_LOGIN);
   });
