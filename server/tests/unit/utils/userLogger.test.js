@@ -23,10 +23,13 @@ describe('userLogger utils', () => {
     await logUserEvent(userId, eventType, details, req);
 
     expect(db.query).toHaveBeenCalledTimes(1);
-    expect(db.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO users_logs'),
-      [userId, eventType, req.ip, req.headers['user-agent'], details],
-    );
+    expect(db.query).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO users_logs'), [
+      userId,
+      eventType,
+      req.ip,
+      req.headers['user-agent'],
+      details,
+    ]);
   });
 
   test('logUserEvent inserta un evento sin req', async () => {
@@ -37,9 +40,12 @@ describe('userLogger utils', () => {
     await logUserEvent(userId, eventType, details);
 
     expect(db.query).toHaveBeenCalledTimes(1);
-    expect(db.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO users_logs'),
-      [userId, eventType, null, null, details],
-    );
+    expect(db.query).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO users_logs'), [
+      userId,
+      eventType,
+      null,
+      null,
+      details,
+    ]);
   });
 });

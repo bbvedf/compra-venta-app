@@ -57,7 +57,7 @@ describe('emailSender utils', () => {
     await emailSender.sendUserRejectedEmail(to);
 
     expect(sendMailMock).toHaveBeenCalledTimes(2);
-    const subjects = sendMailMock.mock.calls.map(call => call[0].subject);
+    const subjects = sendMailMock.mock.calls.map((call) => call[0].subject);
     expect(subjects).toContain('Cuenta aprobada');
     expect(subjects).toContain('Cuenta CANCELADA');
   });
@@ -88,7 +88,9 @@ describe('emailSender utils', () => {
       years: 30,
       paymentsPerYear: 12,
       monthlyPayment: 500,
-      table: [{ period: 1, payment: 500, principalPayment: 300, interestPayment: 200, balance: 99700 }],
+      table: [
+        { period: 1, payment: 500, principalPayment: 300, interestPayment: 200, balance: 99700 },
+      ],
       chartDataUrl: 'data:image/png;base64,BBBB',
     };
 
