@@ -82,8 +82,8 @@ exports.sendUserRejectedEmail = async (to) => {
   return transporter.sendMail(mailOptions);
 };
 
-const { toPng } = require('html-to-image'); // si quieres generar la imagen en backend, ojo que depende de DOM
-const fs = require('fs');
+//const { toPng } = require('html-to-image'); // si quieres generar la imagen en backend, ojo que depende de DOM
+//const fs = require('fs');
 
 exports.sendCalculationEmail = async (to, calculationData, chartDataUrl) => {
   const capitalNum = Number(calculationData.capital) || 0;

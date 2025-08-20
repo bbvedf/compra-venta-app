@@ -61,6 +61,7 @@ exports.checkApproved = async (req, res, next) => {
     }
     next();
   } catch (err) {
+    logger.error('Error en checkApproved:', err);
     res.status(500).json({ error: 'Error al verificar aprobación' });
   }
 };

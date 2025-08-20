@@ -1,5 +1,5 @@
 // Modelo PostgreSQL para emails permitidos
-const { Pool } = require('pg');
+//const { Pool } = require('pg');
 const pool = require('../db');
 
 class ApprovedEmail {

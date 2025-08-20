@@ -8,7 +8,7 @@ module.exports = [
   js.configs.recommended,
   prettier,
   {
-    files: ['**/*.js'],
+    files: ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx"],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -18,8 +18,9 @@ module.exports = [
       sourceType: 'module',
     },
     rules: {
-      'no-console': 'warn',
-      'prefer-const': 'error',
+      "no-console": "warn",        // warnings no detienen CI
+      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }], // variables con _ se ignoran
+      "prefer-const": "error",
     },
   },
 ];
