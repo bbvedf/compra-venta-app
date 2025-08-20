@@ -46,8 +46,12 @@ jobs:
         run: npm ci
         working-directory: server
 
-      - name: Run linter
-        run: npm run lint --if-present
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: server
+
+      - name: Prettier
+        run: npm run format
         working-directory: server
 
       - name: Run tests
