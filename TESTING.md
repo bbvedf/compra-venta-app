@@ -12,6 +12,8 @@ Este documento cubre cómo se ejecutan y estructuran los tests del proyecto.
 - **Mocks personalizados**:
   - `google-auth-library` → Simula OAuth2Client.verifyIdToken().
   - `nodemailer` → Simula envío de emails.
+- **ESlint**  → Detecta y corrige errores de calidad de código JavaScript/TypeScript.
+- **Prettier**  → Formateador automático de estilo de código.
 
 Este repo se integra con:
 - **GitHub Actions** → ejecuta tests en cada push/PR
