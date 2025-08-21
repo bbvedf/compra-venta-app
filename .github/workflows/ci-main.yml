@@ -71,10 +71,8 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@13a24e453e2e6262f3bb0c5fa8241031e637a028
         with:
-          entryPoint: server
-          args: >
-            -Dsonar.projectKey=bbvedf_compra-venta-app
-            -Dsonar.organization=bbvedf
-            -Dsonar.host.url=https://sonarcloud.io
+          entryPoint: .
+          args: >            
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.javascript.lcov.reportPaths=server/coverage/lcov.info
+
+     
