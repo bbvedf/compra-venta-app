@@ -13,11 +13,15 @@ Este documento cubre cómo se ejecutan y estructuran los tests del proyecto.
   - `google-auth-library` → Simula OAuth2Client.verifyIdToken().
   - `nodemailer` → Simula envío de emails.
 
+Este repo se integra con:
+- **GitHub Actions** → ejecuta tests en cada push/PR
+- **SonarCloud** → analiza calidad de código y cobertura
 
 
 ## 📂 Estructura
 server/tests/  
-├── authFlow.test.js # Flujo de registro y login  
+├── integration  
+├── unit  
 ├── mocks/ # Mocks de librerías externas  
 │ ├── google-auth-library.js  
 │ └── nodemailer.js  
