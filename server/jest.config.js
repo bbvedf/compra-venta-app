@@ -22,8 +22,8 @@ module.exports = {
     '!tests/**', // Excluye server/tests/
     '!__mocks__/**', // Excluye server/__mocks__/
     '!coverage/**', // Excluye server/coverage/
-    '!jest.config.js', // Excluye server/jest.config.js
   ],
+  coveragePathIgnorePatterns: ['/node_modules/', 'eslint.config.js', 'debug.js'],
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['lcov', 'text', 'clover'],
   coverageThreshold: {
