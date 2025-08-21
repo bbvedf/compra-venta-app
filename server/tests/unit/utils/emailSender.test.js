@@ -11,7 +11,7 @@ jest.mock('nodemailer', () => {
   const sendMailMock = jest.fn().mockResolvedValue({ messageId: 'test-id' });
   return {
     createTransport: () => ({ sendMail: sendMailMock }),
-    __sendMailMock: sendMailMock, // para poder accederlo en los tests
+    __sendMailMock: sendMailMock, // para accederlo en los tests
   };
 });
 
@@ -80,6 +80,33 @@ describe('emailSender utils', () => {
     expect(mailOptions.html).toContain('Datos de entrada');
   });
 
+  test('sendCalculationEmail funciona si chartDataUrl es vacío', async () => {
+    const to = 'user@example.com';
+    const calculationData = {
+      capital: 500,
+      rate: 2,
+      years: 1,
+      tableData: [],
+    };
+
+    await expect(emailSender.sendCalculationEmail(to, calculationData, '')).resolves.not.toThrow();
+    expect(sendMailMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('sendCalculationEmail maneja error simulado', async () => {
+    sendMailMock.mockRejectedValueOnce(new Error('Error simulado cálculo'));
+
+    await expect(
+      emailSender.sendCalculationEmail(
+        'user@example.com',
+        { capital: 1, rate: 1, years: 1, tableData: [] },
+        '',
+      ),
+    ).rejects.toThrow('Error simulado cálculo');
+
+    expect(sendMailMock).toHaveBeenCalledTimes(1);
+  });
+
   test('sendMortgageEmail envía correo con tabla y gráfico', async () => {
     const to = 'user@example.com';
     const mortgageData = {
@@ -100,5 +127,40 @@ describe('emailSender utils', () => {
     const mailOptions = sendMailMock.mock.calls[0][0];
     expect(mailOptions.attachments.length).toBe(1);
     expect(mailOptions.html).toContain('Amortización');
+  });
+
+  test('sendMortgageEmail funciona si chartDataUrl es vacío', async () => {
+    const mortgageData = {
+      principal: 1000,
+      interestRate: 5,
+      years: 10,
+      paymentsPerYear: 12,
+      monthlyPayment: 100,
+      table: [],
+      chartDataUrl: '',
+    };
+
+    await expect(
+      emailSender.sendMortgageEmail('user@example.com', mortgageData),
+    ).resolves.not.toThrow();
+    expect(sendMailMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('sendMortgageEmail maneja error simulado', async () => {
+    sendMailMock.mockRejectedValueOnce(new Error('Fallo simulado'));
+
+    await expect(
+      emailSender.sendMortgageEmail('user@example.com', {
+        principal: 1000,
+        interestRate: 5,
+        years: 1,
+        paymentsPerYear: 1,
+        monthlyPayment: 100,
+        table: [],
+        chartDataUrl: '',
+      }),
+    ).rejects.toThrow('Fallo simulado');
+
+    expect(sendMailMock).toHaveBeenCalledTimes(1);
   });
 });

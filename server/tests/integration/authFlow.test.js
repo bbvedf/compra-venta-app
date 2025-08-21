@@ -1,3 +1,4 @@
+// server/tests/integration/authFlow.test.js
 const request = require('supertest');
 const index = require('../../index'); // app principal
 const pool = require('../../db');
