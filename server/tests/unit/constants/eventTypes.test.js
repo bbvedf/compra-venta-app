@@ -1,5 +1,5 @@
 // tests/unit/constants/eventTypes.test.js
-const eventTypes = require('../../../server/constants/eventTypes');
+const eventTypes = require('../../../constants/eventTypes');
 
 describe('eventTypes constants', () => {
   it('debería estar definido y no vacío', () => {
