@@ -1,5 +1,5 @@
 // server/tests/unit/authController.test.js
-const { __testHelpers } = require('../../controllers/auth');
+const { __testHelpers } = require('../../../controllers/auth');
 const jwt = require('jsonwebtoken');
 
 describe('authController helpers', () => {
