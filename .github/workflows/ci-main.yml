@@ -73,6 +73,6 @@ jobs:
         with:
           projectBaseDir: .
           args: >
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
      
