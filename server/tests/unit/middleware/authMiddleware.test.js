@@ -2,7 +2,7 @@
 const { verifyToken } = require('../../../middleware/authMiddleware');
 const jwt = require('jsonwebtoken');
 
-jest.mock('../../utils/logger', () => ({
+jest.mock('../../../utils/logger', () => ({
   error: jest.fn(),
   info: jest.fn(),
   warn: jest.fn(),
