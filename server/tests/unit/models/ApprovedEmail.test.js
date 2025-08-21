@@ -11,6 +11,10 @@ describe('ApprovedEmail model', () => {
     jest.clearAllMocks();
   });
 
+  test('ApprovedEmail está definido', () => {
+    expect(ApprovedEmail).toBeDefined();
+  });
+
   test('isApproved devuelve true si el email está aprobado', async () => {
     pool.query.mockResolvedValueOnce({ rows: [{ email: 'test@example.com' }] });
 
