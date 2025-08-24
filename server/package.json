@@ -6,7 +6,7 @@
     "start": "node index.js",
     "test:ci": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --coverage --setupFilesAfterEnv=./tests/setupTestsIntegration.js",
     "test:unit": "NODE_ENV=test npx jest --selectProjects unit --runInBand --detectOpenHandles --coverage",
-    "test:integration": "docker-compose -f ../docker-compose.test.yml down -v && docker-compose -f ../docker-compose.test.yml up -d && NODE_ENV=test npx jest --selectProjects integration --runInBand --detectOpenHandles --coverage && docker-compose -f ../docker-compose.test.yml down -v",
+    "test:integration": "docker compose -f ../docker-compose.test.yml down -v && docker compose -f ../docker-compose.test.yml up -d && NODE_ENV=test npx jest --selectProjects integration --runInBand --detectOpenHandles --coverage && docker compose -f ../docker-compose.test.yml down -v",
     "test:all": "npm run test:unit && npm run test:integration",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
