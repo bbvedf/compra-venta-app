@@ -43,15 +43,28 @@ beforeAll(async () => {
     );
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS banned_ips (
+        id SERIAL PRIMARY KEY,
+        ip_address VARCHAR(45) NOT NULL,
+        reason VARCHAR(255),
+        fails_count INT DEFAULT 0,
+        banned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        ban_until TIMESTAMP NOT NULL
+    );
+  `);
+
   // Limpiar tablas por si acaso
   await pool.query('TRUNCATE users_logs RESTART IDENTITY CASCADE;');
   await pool.query('TRUNCATE users RESTART IDENTITY CASCADE;');
+  await pool.query('TRUNCATE banned_ips RESTART IDENTITY CASCADE;');
 });
 
 // --- Limpiar tablas antes de cada test ---
 beforeEach(async () => {
   await pool.query('TRUNCATE users_logs RESTART IDENTITY CASCADE;');
   await pool.query('TRUNCATE users RESTART IDENTITY CASCADE;');
+  await pool.query('TRUNCATE banned_ips RESTART IDENTITY CASCADE;');
 });
 
 // --- Limpiar mocks ---
