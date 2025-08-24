@@ -1,6 +1,6 @@
 // tests/unit/middleware/helmetHeaders.test.js
 const request = require('supertest');
-const app = require('../../../server');
+const app = require('../../../index'); // tu app
 
 describe('Helmet headers', () => {
   test('debería incluir los headers de seguridad', async () => {

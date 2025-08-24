@@ -9,6 +9,10 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+logs/backend/*.log
+logs/backend/*.log.*
+logs/nginx/*.log
+logs/nginx/*.log.*
 
 # Backups
 /backups/*

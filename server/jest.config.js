@@ -1,12 +1,27 @@
 module.exports = {
+  verbose: true,
   testEnvironment: 'node',
   rootDir: '.', // rootDir es server/
-  detectOpenHandles: true,
-  testMatch: ['<rootDir>/tests/**/*.test.js'],
+  setupFiles: ['<rootDir>/tests/setupEnv.js'], // para .env.test
+
+  projects: [
+    {
+      displayName: 'unit',
+      testMatch: ['<rootDir>/tests/unit/**/*.test.js'],
+      setupFilesAfterEnv: ['<rootDir>/tests/setupTestsUnit.js'],
+    },
+    {
+      displayName: 'integration',
+      testMatch: ['<rootDir>/tests/integration/**/*.test.js'],
+      setupFilesAfterEnv: ['<rootDir>/tests/setupTestsIntegration.js'],
+    },
+  ],
+
   moduleNameMapper: {
     '^nodemailer$': '<rootDir>/__mocks__/nodemailer.js',
     '^google-auth-library$': '<rootDir>/__mocks__/google-auth-library.js',
   },
+
   testPathIgnorePatterns: [
     '/node_modules/',
     '/.vscode-server/',
@@ -14,6 +29,9 @@ module.exports = {
     '/client/',
     '/login-roles/',
   ],
+
+  detectOpenHandles: true,
+
   collectCoverage: true,
   collectCoverageFrom: [
     '**/*.js', // Cubre todos los .js en server/ y subdirectorios
@@ -34,5 +52,4 @@ module.exports = {
       lines: 0,
     },
   },
-  verbose: true,
 };

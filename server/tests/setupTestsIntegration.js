@@ -1,6 +1,8 @@
-// server/tests/setupTest_DB.js
+// server/tests/setupTestsIntegration.js
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'testsecret';
 const pool = require('../db');
 
+// --- Configuración de la BD ---
 beforeAll(async () => {
   // Esperar que la DB esté lista
   let retries = 5;
@@ -10,15 +12,13 @@ beforeAll(async () => {
       break;
     } catch (err) {
       retries -= 1;
-      console.log('Waiting for DB... retrying', err.message); // Añadir mensaje de error
-      if (retries === 0) {
-        throw new Error('Failed to connect to database after retries');
-      }
+      console.log('Waiting for DB... retrying', err.message);
+      if (retries === 0) throw new Error('Failed to connect to database after retries');
       await new Promise((r) => setTimeout(r, 1000));
     }
   }
 
-  // Crear tablas
+  // Crear tablas si no existen
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -43,21 +43,30 @@ beforeAll(async () => {
     );
   `);
 
-  // Usuario dummy
-  await pool.query(`
-    INSERT INTO users (username, email, password, is_approved, role)
-    VALUES ('tester', 'test@example.com', 'hashedpass', true, 'basic')
-    ON CONFLICT (email) DO NOTHING;
-  `);
-}, 30000);
-
-beforeEach(async () => {
-  // Truncar antes de cada test
+  // Limpiar tablas por si acaso
   await pool.query('TRUNCATE users_logs RESTART IDENTITY CASCADE;');
   await pool.query('TRUNCATE users RESTART IDENTITY CASCADE;');
 });
 
+// --- Limpiar tablas antes de cada test ---
+beforeEach(async () => {
+  await pool.query('TRUNCATE users_logs RESTART IDENTITY CASCADE;');
+  await pool.query('TRUNCATE users RESTART IDENTITY CASCADE;');
+});
+
+// --- Limpiar mocks ---
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+// --- Silenciar logs opcional ---
+beforeAll(() => {
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+// --- Cerrar pool al final ---
 afterAll(async () => {
-  // Cerrar al final de toda la suite
   await pool.end();
 });

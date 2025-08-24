@@ -13,7 +13,7 @@ Este documento describe los scripts disponibles en el proyecto y cómo utilizarl
 - `npm run test:ci` → Corre GitHub Actions: coverage + sin levantar nada manualmente (ya lo maneja el workflow).
 - `npm run test:unit` → Tests rápidos, sin BD (usa mock). Para trabajar en local sin levantar contenedores.
 - `npm run test:integration` → Tests que sí dependen de BD real, pero la levanta y tumba automáticamente.
-- `npm run test:db` → Levanta BD, corre todo, útil en local si quieres simular como en CI.
+- `npm run test:all` → Levanta BD, corre todo, útil en local si quieres simular como en CI.
 
 ### Cliente (frontend)
 - `npm start` → Lanza el frontend en modo desarrollo.

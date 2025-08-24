@@ -3,13 +3,14 @@ const logger = require('../../../utils/logger');
 
 describe('logger utils', () => {
   beforeEach(() => {
+    // Espiar console solo en este test
     jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    jest.restoreAllMocks(); // Restaurar para no afectar otros tests
   });
 
   test('info llama a console.log con prefijo y timestamp', () => {
@@ -18,7 +19,7 @@ describe('logger utils', () => {
     expect(console.log).toHaveBeenCalledTimes(1);
     const callArgs = console.log.mock.calls[0];
     expect(callArgs[0]).toBe('[INFO]');
-    expect(callArgs[1]).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/); // ISO timestamp
+    expect(callArgs[1]).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
     expect(callArgs).toContain(msg);
   });
 
