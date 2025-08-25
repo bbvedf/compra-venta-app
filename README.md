@@ -68,6 +68,8 @@ Acceso:
 
 - Frontend: http://localhost:3000  
 - Backend: http://localhost:5000  
+- Prometheus: http://localhost:9090  
+- Dashboard Grafana: http://localhost:4000  
 
 Dominio configurado: https://ryzenpc.mooo.com
 

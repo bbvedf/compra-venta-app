@@ -1,6 +1,10 @@
 // server/utils/logger.js
-module.exports = {
-  info: (...msg) => console.log('[INFO]', new Date().toISOString(), ...msg),
-  warn: (...msg) => console.warn('[WARN]', new Date().toISOString(), ...msg),
-  error: (...msg) => console.error('[ERROR]', new Date().toISOString(), ...msg),
-};
+const createLogger = require('./createLogger');
+
+const logger = createLogger('app.log', {
+  interval: '1d',
+  size: '20M',
+  compress: true,
+});
+
+module.exports = logger;

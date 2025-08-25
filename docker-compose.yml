@@ -12,6 +12,8 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB_TEST: db_test
+    networks:
+      - monitoring_net
 
   pgadmin:
     image: dpage/pgadmin4
@@ -22,6 +24,8 @@ services:
       - "5050:80"
     depends_on:
       - postgres
+    networks:
+      - monitoring_net
 
   backend:
     build:
@@ -36,6 +40,8 @@ services:
       - ./server:/app
       - ./logs/backend:/logs/backend
     command: npm start
+    networks:
+      - monitoring_net
 
   frontend:
     build:
@@ -47,6 +53,8 @@ services:
     volumes:
       - ./client:/app
     command: npm start
+    networks:
+      - monitoring_net
 
   nginx:
     image: nginx:latest
@@ -62,8 +70,46 @@ services:
     depends_on:
       - backend
       - frontend
+    networks:
+      - monitoring_net
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: always
+    networks:
+      - monitoring_net
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: compra-venta-app-node-exporter
+    restart: always
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring_net
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "4000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
+    restart: always
+    depends_on:
+      - prometheus
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    networks:
+      - monitoring_net
 
 volumes:
   postgres_data:
-  
 
+networks:
+  monitoring_net:
+    driver: bridge

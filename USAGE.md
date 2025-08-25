@@ -34,7 +34,7 @@ Levanta backend, frontend y base de datos en contenedores para testing local.
 ```bash
 docker-compose -f docker-compose.yml up --build
 ```
-Levanta todo el stack (Nginx + Backend + Frontend + PostgreSQL) con HTTPS.
+Levanta todo el stack (Nginx + Backend + Frontend + PostgreSQL + Prometheus + Grafana) con HTTPS.
 
 
 

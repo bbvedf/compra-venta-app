@@ -15,10 +15,7 @@ describe('userLogger utils', () => {
     const userId = 1;
     const eventType = 'LOGIN';
     const details = { foo: 'bar' };
-    const req = {
-      ip: '127.0.0.1',
-      headers: { 'user-agent': 'jest-agent' },
-    };
+    const req = { ip: '127.0.0.1', headers: { 'user-agent': 'jest-agent' } };
 
     await logUserEvent(userId, eventType, details, req);
 

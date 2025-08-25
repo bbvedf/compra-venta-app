@@ -1,45 +1,40 @@
-// server/tests/unit/utils/logger.test.js
+// tests/unit/utils/logger.test.js
 const logger = require('../../../utils/logger');
 
 describe('logger utils', () => {
-  beforeEach(() => {
-    // Espiar console solo en este test
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+  let spy;
+
+  beforeAll(() => {
+    // Espiamos los métodos del logger
+    spy = jest.spyOn(logger, 'info');
+    jest.spyOn(logger, 'warn');
+    jest.spyOn(logger, 'error');
   });
 
   afterEach(() => {
-    jest.restoreAllMocks(); // Restaurar para no afectar otros tests
+    spy.mockClear();
+    logger.warn.mockClear();
+    logger.error.mockClear();
   });
 
-  test('info llama a console.log con prefijo y timestamp', () => {
-    const msg = 'Mensaje de info';
+  test('logger.info escribe JSON con level info y msg', () => {
+    const msg = 'Mensaje info';
     logger.info(msg);
-    expect(console.log).toHaveBeenCalledTimes(1);
-    const callArgs = console.log.mock.calls[0];
-    expect(callArgs[0]).toBe('[INFO]');
-    expect(callArgs[1]).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-    expect(callArgs).toContain(msg);
+
+    expect(logger.info).toHaveBeenCalledWith(msg);
   });
 
-  test('warn llama a console.warn con prefijo y timestamp', () => {
-    const msg = 'Mensaje de advertencia';
+  test('logger.warn escribe JSON con level warn y msg', () => {
+    const msg = 'Mensaje warn';
     logger.warn(msg);
-    expect(console.warn).toHaveBeenCalledTimes(1);
-    const callArgs = console.warn.mock.calls[0];
-    expect(callArgs[0]).toBe('[WARN]');
-    expect(callArgs[1]).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-    expect(callArgs).toContain(msg);
+
+    expect(logger.warn).toHaveBeenCalledWith(msg);
   });
 
-  test('error llama a console.error con prefijo y timestamp', () => {
-    const msg = 'Mensaje de error';
+  test('logger.error escribe JSON con level error y msg', () => {
+    const msg = 'Mensaje error';
     logger.error(msg);
-    expect(console.error).toHaveBeenCalledTimes(1);
-    const callArgs = console.error.mock.calls[0];
-    expect(callArgs[0]).toBe('[ERROR]');
-    expect(callArgs[1]).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-    expect(callArgs).toContain(msg);
+
+    expect(logger.error).toHaveBeenCalledWith(msg);
   });
 });

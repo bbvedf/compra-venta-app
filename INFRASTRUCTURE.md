@@ -4,7 +4,7 @@
 
 ## 🌐 Producción  
 - **Nginx** → Reverse proxy con certificados Let's Encrypt.
-- **Docker Compose** → Orquestación de contenedores (frontend, backend, base de datos, Nginx).
+- **Docker Compose** → Orquestación de contenedores (frontend, backend, base de datos, Nginx, ...).
 - **Dominio configurado** → `https://ryzenpc.mooo.com`.
 
 ### Comando principal  
@@ -23,15 +23,27 @@ docker-compose -f docker-compose.yml up --build
 - Alertas automáticas y actualizaciones de seguridad para dependencias críticas con Snyk.  
 
 
-### 📜 Logs
-- Logs de backend (logs/backend/):  
-    - requests.log → registro de todas las peticiones HTTP  
-    - Incluye los baneos aplicados con bannedIP.js.  
-    - Rotación automática con logrotate (configuración en logrotate.conf)  
-    - Se mantienen los últimos 7 archivos comprimidos (.gz)  
-- Logs de nginx (logs/nginx/):  
-    - access.log y error.log  
-    - También rotan automáticamente  
+### 📜 Logs  
+- Backend:  
+  - Logging estructurado JSON con `Pino`  
+  - Incluye request logging y errores 5xx  
+  - Rotación automática con `pino-rotating-file`  
+  - Salida a stdout para Docker/Kubernetes  
+- Nginx:  
+  - access.log y error.log  
+  - Rotación automática  
+
+
+### 📊 Observabilidad
+- **Prometheus** → Scrapea métricas del backend Node.js  
+  - `/metrics` expone: Uptime, requests HTTP, errores 5xx, latencias p95  
+- **Grafana** → Dashboard principal `Compra-Venta App`  
+  - Paneles: Uptime, Contador de requests HTTP, Errores 5xx, Latencia p95  
+  - Backup de dashboards en JSON en `/grafana-backups`  
+- **Docker / Compose**  
+  - Servicios nuevos: `grafana`, `prometheus`  
+  - Red `monitoring_net` para comunicación entre servicios  
+  - Volúmenes persistentes: `grafana-data`, `postgres-data`  
 
 
 ### 📂 Infraestructura  

@@ -33,3 +33,9 @@ Thumbs.db
 /certbot-data/
 /nginx/certs/
 /nginx/certbot-log/
+
+# Grafana data directory
+/grafana-data/  
+
+# PostgreSQL data directory
+/postgres-data/

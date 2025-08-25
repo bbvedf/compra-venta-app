@@ -1,0 +1,3 @@
+{"level":30,"time":1756113916799,"pid":19661,"hostname":"ryzen-pc","msg":"Mensaje de info"}
+{"level":40,"time":1756113916807,"pid":19661,"hostname":"ryzen-pc","msg":"Mensaje de advertencia"}
+{"level":50,"time":1756113916810,"pid":19661,"hostname":"ryzen-pc","msg":"Mensaje de error"}

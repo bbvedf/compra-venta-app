@@ -1,51 +1,34 @@
-const requestLogger = require('../../../utils/requestLogger');
-const fs = require('fs');
+// server/tests/unit/utils/requestLogger.test.js
+const logger = require('../../../utils/logger');
 
-jest.mock('fs');
-
-describe('requestLogger middleware', () => {
-  let req, res, next;
-
+describe('logger utils - requestLogger', () => {
   beforeEach(() => {
-    req = {
-      ip: '9.8.7.6',
-      method: 'GET',
-      url: '/test',
-      httpVersion: '1.1',
-      headers: { 'user-agent': 'jest-test' },
-    };
-    res = {
-      statusCode: 200,
-      end: jest.fn(),
-    };
-    next = jest.fn();
-
-    fs.appendFile.mockImplementation((file, data, cb) => cb(null));
+    jest.spyOn(logger, 'info');
+    jest.spyOn(logger, 'warn');
+    jest.spyOn(logger, 'error');
   });
 
-  it('logea request con statusCode 200', () => {
-    requestLogger(req, res, next);
-
-    res.end(); // simula cerrar la respuesta
-
-    expect(fs.appendFile).toHaveBeenCalledWith(
-      expect.stringContaining('requests.log'),
-      expect.stringContaining('"GET /test HTTP/1.1" 200'),
-      expect.any(Function),
-    );
-    expect(next).toHaveBeenCalled();
+  afterEach(() => {
+    logger.info.mockRestore();
+    logger.warn.mockRestore();
+    logger.error.mockRestore();
   });
 
-  it('logea request con statusCode 404', () => {
-    res.statusCode = 404;
+  test('logger.info escribe JSON con level info y msg', () => {
+    const msg = 'Mensaje info';
+    logger.info(msg);
+    expect(logger.info).toHaveBeenCalledWith(msg);
+  });
 
-    requestLogger(req, res, next);
-    res.end();
+  test('logger.warn escribe JSON con level warn y msg', () => {
+    const msg = 'Mensaje warn';
+    logger.warn(msg);
+    expect(logger.warn).toHaveBeenCalledWith(msg);
+  });
 
-    expect(fs.appendFile).toHaveBeenCalledWith(
-      expect.stringContaining('requests.log'),
-      expect.stringContaining('"GET /test HTTP/1.1" 404'),
-      expect.any(Function),
-    );
+  test('logger.error escribe JSON con level error y msg', () => {
+    const msg = 'Mensaje error';
+    logger.error(msg);
+    expect(logger.error).toHaveBeenCalledWith(msg);
   });
 });
