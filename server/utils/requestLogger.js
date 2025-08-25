@@ -1,6 +1,7 @@
 // server/utils/requestLogger.js
 const pinoHttp = require('pino-http');
 const createLogger = require('./createLogger');
+const { v4: uuidv4 } = require('uuid');
 
 const requestLoggerInstance = createLogger('request.log', {
   interval: '1d',
@@ -39,7 +40,7 @@ const requestLogger = pinoHttp({
     const duration = res.responseTime != null ? `${res.responseTime}ms` : '-';
     return `${res.req.method} ${res.req.url} - ${res.statusCode} [${duration}] - ${error.message}`;
   },
-  genReqId: (req) => req.headers['x-request-id'] || `${Date.now()}-${Math.random()}`,
+  genReqId: (req) => req.headers['x-request-id'] || uuidv4(),
 });
 
 module.exports = requestLogger;
