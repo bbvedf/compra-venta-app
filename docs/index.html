@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compra-Venta App - Capturas</title>
+
+  <!-- Docsify CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css">
+
+  <!-- Swiper CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
+  />
+
+  <style>
+    body { margin: 0; padding: 0; font-family: sans-serif; }
+    .swiper {
+      width: 100%;
+      height: 80vh;
+      margin: 20px auto;
+    }
+    .swiper-slide {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .swiper-slide img {
+      max-width: 90%;
+      max-height: 70%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .caption {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: #333;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1 style="text-align:center;">Compra-Venta App - Capturas</h1>
+
+    <!-- Swiper -->
+    <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <img src="images/grafana.png" alt="Grafana dashboard">
+          <div class="caption">Grafana dashboard</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/compose.png" alt="Docker Compose">
+          <div class="caption">Docker Compose</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/prometheus.png" alt="Prometheus metrics">
+          <div class="caption">Prometheus metrics</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/actions.png" alt="GitHub Actions">
+          <div class="caption">GitHub Actions</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/sonarcloud.png" alt="SonarCloud">
+          <div class="caption">SonarCloud</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/ide.png" alt="IDE">
+          <div class="caption">IDE</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/login.png" alt="Pantalla login">
+          <div class="caption">Pantalla login</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/basic_dashboard.png" alt="Dashboard básico">
+          <div class="caption">Dashboard básico</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/pending_approval.png" alt="Login pendiente de aprobación">
+          <div class="caption">Login pendiente de aprobación</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/admin_dashboard.png" alt="Dashboard admin">
+          <div class="caption">Dashboard admin</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/user management.png" alt="Gestión de usuarios">
+          <div class="caption">Gestión de usuarios</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/ci_calc.png" alt="Calculadora interés compuesto">
+          <div class="caption">Calculadora interés compuesto</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/ma_calc.png" alt="Calculadora amortización">
+          <div class="caption">Calculadora amortización</div>
+        </div>
+        <div class="swiper-slide">
+          <img src="images/light_style.png" alt="Estilo claro">
+          <div class="caption">Estilo claro</div>
+        </div>
+      </div>
+      <!-- Swiper pagination -->
+      <div class="swiper-pagination"></div>
+      <!-- Navigation arrows -->
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+    </div>
+  </div>
+
+  <!-- Docsify -->
+  <script>
+    window.$docsify = {
+      loadSidebar: true
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script>
+    const swiper = new Swiper('.mySwiper', {
+      loop: true,
+      pagination: { el: '.swiper-pagination', clickable: true },
+      navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+      spaceBetween: 30,
+      centeredSlides: true,
+      slidesPerView: 1,
+      breakpoints: {
+        640: { slidesPerView: 1 },
+        768: { slidesPerView: 2 },
+        1024: { slidesPerView: 3 }
+      }
+    });
+  </script>
+</body>
+</html>

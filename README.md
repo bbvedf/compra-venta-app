@@ -22,15 +22,17 @@
 Sistema completo de autenticación con registro, login, rutas protegidas y despliegue Docker en producción.
 
 **Características principales**:
-- Registro seguro con validación  
-- Login persistente con JWT  
-- Dashboard protegido  
-- Gestión de usuarios aprobados/no aprobados  
-- Login con cuenta de Google (OAuth)  
-- Menú unificado en frontend  
-- Calculadora de interés compuesto y amortización hipotecaria  
-- Logging de eventos de usuario (registro, login, logout, fallos, etc.)  
-- Tests con mocks de Google OAuth2 y nodemailer  
+- Registro seguro con validación.  
+- Login persistente con JWT.  
+- Dashboard protegido y menú unificado en frontend.  
+- Gestión de usuarios aprobados/no aprobados.  
+- Login con cuenta de Google (OAuth).  
+- Calculadora de interés compuesto y amortización hipotecaria.  
+- Logging estructurado de eventos de usuario (registro, login, logout, fallos, etc.) con rotación automática de logs.  
+- Healthcheck de backend y verificación de base de datos.  
+- Métricas expuestas para Prometheus: uptime, requests, errores 5xx y latencias.  
+- Dashboard inicial en Grafana para monitoreo en tiempo real.  
+- Tests con mocks de Google OAuth2 y nodemailer.  
 
 ---
 
@@ -89,13 +91,11 @@ Dominio configurado: https://ryzenpc.mooo.com
 ## 📝 Próximas Mejoras  
 - Swagger/OpenAPI + validación con Joi/zod
 - E2E con Cypress
-- Helmet + Rate limiting
-- Monitoring (Grafana/Prometheus) 
 - Nuevos componentes  
 
 ---
 
-📌 **Requisitos mínimos**  
+## 📌 **Requisitos mínimos**  
 - Node.js 18+  
 - PostgreSQL 12+  
 
