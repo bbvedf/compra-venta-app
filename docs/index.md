@@ -2,56 +2,65 @@
 [Volver al repositorio](https://github.com/bbvedf/compra-venta-app)
 
 <!-- Swiper CSS -->
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
-/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
 <style>
 /* Ajustes del carrusel */
 .swiper-container {
   width: 100%;
-  height: 90vh; /* fila principal más alta */
+  max-width: 1200px; /* Limita el ancho máximo */
+  height: auto; /* Cambiado de 90vh a auto para adaptarse al contenido */
   margin: 20px auto;
+  padding-bottom: 20px;
 }
 .swiper-slide {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: auto; /* Ajusta la altura dinámicamente */
 }
 .swiper-slide img {
   max-width: 90%;
-  max-height: 85%;
+  max-height: 500px; /* Limita la altura máxima de la imagen */
   object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  cursor: zoom-in; /* indica que se puede hacer click */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer; /* Cambiado a pointer para mejor claridad */
+  transition: transform 0.3s ease; /* Suaviza el zoom */
+}
+.swiper-slide img:hover {
+  transform: scale(1.05); /* Efecto hover para indicar interactividad */
 }
 .caption {
-  margin-top: 6px;
-  font-size: 0.9rem;
+  margin-top: 10px; /* Reducido para acercar el pie de foto */
+  font-size: 1rem; /* Ligeramente más grande para legibilidad */
   color: #333;
   text-align: center;
 }
 .swiper-thumbs {
-  height: 100px;
+  height: 120px; /* Aumentado para mejor visibilidad */
   box-sizing: border-box;
   padding: 10px 0;
 }
 .swiper-thumbs .swiper-slide {
   width: auto;
   height: 100%;
-  opacity: 0.4;
+  opacity: 0.6; /* Aumentado para mejor contraste */
   cursor: pointer;
 }
 .swiper-thumbs .swiper-slide-thumb-active {
   opacity: 1;
+  border: 2px solid #007bff; /* Indicador visual para la miniatura activa */
 }
 .swiper-thumbs img {
-  height: 80px;
+  height: 100px; /* Aumentado para mejor proporción */
   object-fit: cover;
   border-radius: 4px;
+}
+.swiper-button-next,
+.swiper-button-prev {
+  color: #007bff; /* Color más visible para las flechas */
 }
 </style>
 
@@ -82,12 +91,11 @@
       </div>
       <div class="caption">GitHub Actions</div>
     </div>
-    <!-- resto de slides igual... -->
   </div>
-
   <!-- Navigation -->
   <div class="swiper-button-next"></div>
   <div class="swiper-button-prev"></div>
+  <div class="swiper-pagination"></div> <!-- Añadido para mejor navegación -->
 </div>
 
 <!-- Thumbnails -->
@@ -97,7 +105,6 @@
     <div class="swiper-slide"><img src="images/compose.png" alt="Docker Compose"></div>
     <div class="swiper-slide"><img src="images/prometheus.png" alt="Prometheus metrics"></div>
     <div class="swiper-slide"><img src="images/actions.png" alt="GitHub Actions"></div>
-    <!-- resto de thumbs igual... -->
   </div>
 </div>
 
@@ -107,30 +114,46 @@
 document.addEventListener("DOMContentLoaded", function() {
   const thumbsSwiper = new Swiper('.swiper-thumbs', {
     spaceBetween: 10,
-    slidesPerView: 6,
+    slidesPerView: 4, /* Reducido para mejor visualización en pantallas pequeñas */
     freeMode: true,
     watchSlidesProgress: true,
     breakpoints: {
-      640: { slidesPerView: 4 },
-      768: { slidesPerView: 5 },
-      1024: { slidesPerView: 6 }
+      640: { slidesPerView: 3 },
+      768: { slidesPerView: 4 },
+      1024: { slidesPerView: 5 }
     }
   });
 
   const mainSwiper = new Swiper('.mainSwiper', {
     loop: true,
-    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-    pagination: { el: '.swiper-pagination', clickable: true },
-    thumbs: { swiper: thumbsSwiper },
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev'
+    },
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true
+    },
+    thumbs: {
+      swiper: thumbsSwiper
+    },
+    spaceBetween: 20, /* Reducido para mejor espaciado */
+    slidesPerView: 1, /* Solo una imagen en el carrusel principal */
     centeredSlides: true,
-    spaceBetween: 30,
-    slidesPerView: 1,
-    autoplay: { delay: 5000, disableOnInteraction: false }, /* autoplay más lento */
-    zoom: { maxRatio: 2 }, /* click para ampliar */
-    breakpoints: {
-      640: { slidesPerView: 1 },
-      768: { slidesPerView: 2 },
-      1024: { slidesPerView: 3 }
+    autoplay: {
+      delay: 5000,
+      disableOnInteraction: false
+    },
+    zoom: {
+      maxRatio: 2.5, /* Aumentado para un zoom más notable */
+      toggle: true /* Habilita zoom con un solo clic */
+    }
+  });
+
+  // Manejo manual del zoom para mejorar la experiencia
+  mainSwiper.on('click', function(swiper, event) {
+    if (event.target.tagName === 'IMG') {
+      swiper.zoom.toggle(); /* Alterna zoom con un solo clic */
     }
   });
 });
