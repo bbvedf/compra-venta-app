@@ -95,6 +95,16 @@
     <div class="swiper-slide"><img src="images/compose.png" alt="Docker Compose"></div>
     <div class="swiper-slide"><img src="images/prometheus.png" alt="Prometheus metrics"></div>
     <div class="swiper-slide"><img src="images/actions.png" alt="GitHub Actions"></div>
+    <div class="swiper-slide"><img src="images/sonarcloud.png" alt="SonarCloud"></div>
+    <div class="swiper-slide"><img src="images/ide.png" alt="IDE"></div>
+    <div class="swiper-slide"><img src="images/login.png" alt="Pantalla login"></div>
+    <div class="swiper-slide"><img src="images/basic_dashboard.png" alt="Dashboard básico"></div>
+    <div class="swiper-slide"><img src="images/pending_approval.png" alt="Login pendiente de aprobación"></div>
+    <div class="swiper-slide"><img src="images/admin_dashboard.png" alt="Dashboard admin"></div>
+    <div class="swiper-slide"><img src="images/user_management.png" alt="Gestión de usuarios"></div>
+    <div class="swiper-slide"><img src="images/ci_calc.png" alt="Calculadora interés compuesto"></div>
+    <div class="swiper-slide"><img src="images/ma_calc.png" alt="Calculadora amortización"></div>
+    <div class="swiper-slide"><img src="images/light_style.png" alt="Estilo claro"></div>
   </div>
 </div>
 
@@ -135,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function() {
       disableOnInteraction: false
     },
     zoom: {
-      maxRatio: 2.5, /* Aumentado para un zoom más notable */
+      maxRatio: 2, /* Aumentado para un zoom más notable */
       toggle: true /* Habilita zoom con un solo clic */
     }
   });
