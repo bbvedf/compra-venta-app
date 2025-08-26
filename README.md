@@ -84,6 +84,7 @@ Dominio configurado: https://ryzenpc.mooo.com
 - [Testing y mocks](TESTING.md)
 - [Infraestructura y despliegue](INFRASTRUCTURE.md)
 - [Endpoints y funcionalidades](API.md)
+- [Capturas y Docs](docs/index.html)
 
 ---
 
