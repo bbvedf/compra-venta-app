@@ -1,4 +1,4 @@
-## 📚 Capturas
+## 📸 Capturas
 [Volver al repositorio](https://github.com/bbvedf/compra-venta-app)
 
 <!-- Swiper CSS -->
@@ -67,35 +67,25 @@
 <!-- Swiper HTML -->
 <div class="swiper-container mainSwiper">
   <div class="swiper-wrapper">
-    <div class="swiper-slide">
-      <div class="swiper-zoom-container">
-        <img src="images/grafana.png" alt="Grafana dashboard">
-      </div>
-      <div class="caption">Grafana dashboard</div>
-    </div>
-    <div class="swiper-slide">
-      <div class="swiper-zoom-container">
-        <img src="images/compose.png" alt="Docker Compose">
-      </div>
-      <div class="caption">Docker Compose</div>
-    </div>
-    <div class="swiper-slide">
-      <div class="swiper-zoom-container">
-        <img src="images/prometheus.png" alt="Prometheus metrics">
-      </div>
-      <div class="caption">Prometheus metrics</div>
-    </div>
-    <div class="swiper-slide">
-      <div class="swiper-zoom-container">
-        <img src="images/actions.png" alt="GitHub Actions">
-      </div>
-      <div class="caption">GitHub Actions</div>
-    </div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/grafana.png" alt="Grafana dashboard"></div><div class="caption">Grafana dashboard</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/compose.png" alt="Docker Compose"></div><div class="caption">Docker Compose</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/prometheus.png" alt="Prometheus metrics"></div><div class="caption">Prometheus metrics</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/actions.png" alt="GitHub Actions"></div><div class="caption">GitHub Actions</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/sonarcloud.png" alt="SonarCloud"></div><div class="caption">SonarCloud</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/ide.png" alt="IDE"></div><div class="caption">IDE</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/login.png" alt="Pantalla login"></div><div class="caption">Pantalla login</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/basic_dashboard.png" alt="Dashboard básico"></div><div class="caption">Dashboard básico</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/pending_approval.png" alt="Login pendiente de aprobación"></div><div class="caption">Login pendiente de aprobación</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/admin_dashboard.png" alt="Dashboard admin"></div><div class="caption">Dashboard admin</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/user_management.png" alt="Gestión de usuarios"></div><div class="caption">Gestión de usuarios</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/ci_calc.png" alt="Calculadora interés compuesto"></div><div class="caption">Calculadora interés compuesto</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/ma_calc.png" alt="Calculadora amortización"></div><div class="caption">Calculadora amortización</div></div>
+    <div class="swiper-slide"><div class="swiper-zoom-container"><img src="images/light_style.png" alt="Estilo claro"></div><div class="caption">Estilo claro</div></div>
   </div>
   <!-- Navigation -->
   <div class="swiper-button-next"></div>
   <div class="swiper-button-prev"></div>
-  <div class="swiper-pagination"></div> <!-- Añadido para mejor navegación -->
+  <div class="swiper-pagination"></div>
 </div>
 
 <!-- Thumbnails -->
