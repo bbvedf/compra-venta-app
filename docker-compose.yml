@@ -14,6 +14,7 @@ services:
       POSTGRES_DB_TEST: db_test
     networks:
       - monitoring_net
+      - shared_net
 
   pgadmin:
     image: dpage/pgadmin4
@@ -26,6 +27,7 @@ services:
       - postgres
     networks:
       - monitoring_net
+      - shared_net
 
   backend:
     build:
@@ -42,6 +44,7 @@ services:
     command: npm start
     networks:
       - monitoring_net
+      - shared_net
 
   frontend:
     build:
@@ -55,6 +58,7 @@ services:
     command: npm start
     networks:
       - monitoring_net
+      - shared_net
 
   nginx:
     image: nginx:latest
@@ -72,6 +76,7 @@ services:
       - frontend
     networks:
       - monitoring_net
+      - shared_net
 
   prometheus:
     image: prom/prometheus:latest
@@ -82,6 +87,7 @@ services:
     restart: always
     networks:
       - monitoring_net
+      - shared_net
 
   node_exporter:
     image: prom/node-exporter:latest
@@ -91,6 +97,7 @@ services:
       - "9100:9100"
     networks:
       - monitoring_net
+      - shared_net
 
   grafana:
     image: grafana/grafana:latest
@@ -106,6 +113,7 @@ services:
       - ./grafana-data:/var/lib/grafana
     networks:
       - monitoring_net
+      - shared_net
 
 volumes:
   postgres_data:
@@ -113,3 +121,5 @@ volumes:
 networks:
   monitoring_net:
     driver: bridge
+  shared_net:
+    external: true

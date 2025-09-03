@@ -90,6 +90,7 @@ Dominio configurado: https://ryzenpc.mooo.com
 
 
 ## 📝 Próximas Mejoras  
+- Integración con otras aplicaciones con tecnologías diferentes.
 - Swagger/OpenAPI + validación con Joi/zod
 - E2E con Cypress
 - Nuevos componentes  
