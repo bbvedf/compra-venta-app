@@ -71,6 +71,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./certbot-data/etc/letsencrypt:/etc/letsencrypt:ro
       - ./logs/nginx:/var/log/nginx
+      - ./shared:/usr/share/nginx/html/shared:ro
     depends_on:
       - backend
       - frontend

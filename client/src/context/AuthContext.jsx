@@ -1,16 +1,16 @@
+//client/src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../../src/config';
+import { API_BASE_URL } from '../config';
 
-// 1. Añade error al contexto
 export const AuthContext = createContext({
   user: null,
   isLoggedIn: false,
   loading: true,
-  error: null,         // Nuevo estado para errores
-  setError: () => { },  // Función para actualizar errores
-  login: () => { },
-  logout: () => { },
+  error: null,
+  setError: () => {},
+  login: () => {},
+  logout: () => {},
 });
 
 export const useAuth = () => {
@@ -25,12 +25,32 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // 2. Estado para errores
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // Función para sincronizar el estado de autenticación
+  const syncAuthState = (token, userData = null) => {
+    console.log('🔄 Sincronizando estado auth - token:', !!token);
+    if (token) {
+      localStorage.setItem('token', token);
+      if (userData) {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+      setIsLoggedIn(true);
+    } else {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      setIsLoggedIn(false);
+    }
+  };
 
   useEffect(() => {
     const verifyAuth = async () => {
       const token = localStorage.getItem('token');
+      console.log('🔍 AuthContext verificando token:', token ? 'SÍ' : 'NO');
+      
       if (!token) {
         setLoading(false);
         return;
@@ -43,18 +63,23 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const { user } = await response.json();
+          console.log('✅ Usuario verificado:', user);
           setUser(user);
           setIsLoggedIn(true);
+          
           if (user?.isApproved) {
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
           } else {
-            navigate('/welcome');
+            navigate('/welcome', { replace: true });
           }
         } else {
+          console.log('❌ Token inválido, limpiando...');
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
         }
       } catch (error) {
-        setError("Error al verificar autenticación"); // 3. Manejo de errores
+        console.error('Error al verificar auth:', error);
+        setError("Error al verificar autenticación");
       } finally {
         setLoading(false);
       }
@@ -65,6 +90,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      setError(null);
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,26 +98,27 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
+      console.log('📥 Respuesta login:', data);
 
       if (!response.ok) {
         if (response.status === 403 && data.requiresApproval) {
-          // Redirige PRIMERO antes de hacer return
           navigate('/welcome', {
             state: { email: data.email || email },
             replace: true
           });
-          return { requiresApproval: true }; // Return especial
+          return { requiresApproval: true };
         }
         throw new Error(data.error || 'Error en login');
       }
 
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
-      navigate(data.user.isApproved ? '/dashboard' : '/welcome');
+      // Sincronizar el estado con el token recibido
+      syncAuthState(data.token, data.user);
+      navigate(data.user.isApproved ? '/dashboard' : '/welcome', { replace: true });
       return data;
 
     } catch (error) {
       console.error('Login error:', error);
+      setError(error.message);
       throw error;
     }
   };
@@ -111,22 +138,18 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.warn('Logout falló (pero continuamos):', error);
     } finally {
-      localStorage.removeItem('token');
-      setUser(null);
-      setIsLoggedIn(false);
-      setError(null);
+      syncAuthState(null); // Limpiar estado
       navigate('/login');
     }
   };
-
 
   return (
     <AuthContext.Provider value={{
       user,
       isLoggedIn,
       loading,
-      error,      // 7. Expón el estado de error
-      setError,   // 8. Expón la función para actualizarlo
+      error,
+      setError,
       login,
       logout
     }}>

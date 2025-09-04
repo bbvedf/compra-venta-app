@@ -64,27 +64,39 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+  console.log('req.body:', req.body);
   try {
     const { email, password } = req.body;
+    console.log('Extracción de email y password:', { email, password });
+
+    if (!email || !password) {
+      console.log('Faltan email o password');
+      return res.status(400).json({ error: 'Faltan credenciales' });
+    }
 
     const user = await pool.query(
       `SELECT id, email, username, password, is_approved AS "isApproved", role
        FROM users WHERE email = $1`,
       [email],
     );
+    console.log('Resultado de la consulta:', user.rows);
 
     if (user.rows.length === 0) {
+      console.log('Usuario no encontrado');
       await userLogger.logUserEvent(null, eventTypes.SUSPICIOUS_LOGIN, { email });
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
+    console.log('Contraseña válida:', validPassword);
     if (!validPassword) {
+      console.log('Contraseña inválida');
       await userLogger.logUserEvent(user.rows[0].id, eventTypes.FAILED_LOGIN, { email });
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
     if (!user.rows[0].isApproved) {
+      console.log('Usuario no aprobado');
       await userLogger.logUserEvent(user.rows[0].id, eventTypes.PENDING_APPROVAL_LOGIN, { email });
       return res.status(403).json({
         requiresApproval: true,
@@ -94,8 +106,10 @@ exports.login = async (req, res) => {
     }
 
     const token = generateToken(user.rows[0]);
+    console.log('Token generado:', token);
     await userLogger.logUserEvent(user.rows[0].id, eventTypes.LOGIN, { email });
 
+    console.log('Enviando respuesta');
     res.json({
       success: true,
       token,
@@ -107,6 +121,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log('Error en login:', error.message);
     logger.error('Error en login:', error);
     res.status(500).json({ error: 'Error en el servidor' });
   }

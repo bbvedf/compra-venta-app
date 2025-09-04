@@ -39,3 +39,6 @@ Thumbs.db
 
 # PostgreSQL data directory
 /postgres-data/
+
+# Notas/apuntes/Resumenes
+_notas.txt

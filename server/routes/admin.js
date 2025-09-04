@@ -66,7 +66,7 @@ router.patch(
   isAdmin,
   [
     param('id').isInt().withMessage('ID debe ser un número'),
-    body('role').optional().isIn(['user', 'admin']).withMessage('Role inválido'),
+    body('role').optional().isIn(['basic', 'admin']).withMessage('Rol inválido'),
     body('isApproved').optional().isBoolean().withMessage('isApproved debe ser booleano'),
   ],
   validate,
