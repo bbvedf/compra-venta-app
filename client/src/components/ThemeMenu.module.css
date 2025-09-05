@@ -112,6 +112,26 @@
   stroke-width: 2;
 }
 
+
+.submenuHeader {
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: default;
+  user-select: none;
+  margin: 8px 0 4px 0;
+  border-radius: 6px;  
+  
+  /* Usar variables del tema */
+  background: linear-gradient(135deg, var(--color-link), var(--color-button-bg-hover));
+  opacity: 0.9;
+}
+
+
+
 /* Versión móvil */
 @media (max-width: 768px) {
   .menuContainer {

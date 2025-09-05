@@ -1,23 +1,21 @@
-import { useState } from 'react';
-import { useContext } from 'react';
+import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import styles from './ThemeMenu.module.css';
-import { FiSun, FiMoon, FiLogOut, FiHome, FiSettings, FiTrendingUp, FiBarChart } from 'react-icons/fi';
-
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const ThemeMenu = ({ theme, setTheme }) => {
     const { user, logout } = useContext(AuthContext);
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
 
-const handleNavigation = (tab) => {
-  navigate('/dashboard', { 
-    state: { activeTab: tab },
-    replace: true // Esto evita acumular historial de navegación
-  });
-  setIsOpen(false);
-};
+    const handleNavigation = (tab) => {
+        navigate('/dashboard', {
+            state: { activeTab: tab },
+            replace: true
+        });
+        setIsOpen(false);
+    };
 
     return (
         <div className={styles.menuContainer}>
@@ -35,36 +33,65 @@ const handleNavigation = (tab) => {
                 <div className={styles.menuDropdown}>
                     {/* Sección de Navegación */}
                     {user && (
-                    <button className={styles.menuItem} onClick={() => handleNavigation('inicio')}>
-                        <FiHome size={16} className={styles.icon} />
-                        Inicio
-                    </button>
+                        <button className={styles.menuItem} onClick={() => handleNavigation('inicio')}>
+                            <i className="bi bi-house-fill"></i>
+                            Inicio
+                        </button>
                     )}
                     {user?.role === 'admin' && (
                         <button className={styles.menuItem} onClick={() => handleNavigation('configuracion')}>
-                            <FiSettings size={16} className={styles.icon} />
-                            Configuración
+                            <i className="bi bi-people-fill"></i>
+                            Gestión de Usuarios
                         </button>
                     )}
 
                     {user?.role === 'admin' && (
-                    <button className={styles.menuItem} onClick={() => handleNavigation('calculadora')}>
-                        <FiTrendingUp size={16} className={styles.icon} />
-                        Interés Compuesto
-                    </button>
+                        <>
+                            <div className={styles.menuDivider}></div>
+
+                            {/* Submenú Finanzas */}
+                            <div className={styles.submenu}>
+                                <div className={styles.submenuHeader}>
+                                    <i className="bi bi-wallet2"></i>
+                                    Finanzas
+                                </div>
+
+                                <button className={styles.menuItem} onClick={() => window.location.href = '/finanzas/categories'}>
+                                    <i className="bi bi-folder-fill"></i>
+                                    Categorías
+                                </button>
+
+                                <button className={styles.menuItem} onClick={() => window.location.href = '/finanzas/transactions'}>
+                                    <i className="bi bi-credit-card-fill"></i>
+                                    Transacciones
+                                </button>
+
+                                <button className={styles.menuItem} onClick={() => window.location.href = '/finanzas/stats'}>
+                                    <i className="bi bi-bar-chart-fill"></i>
+                                    Estadísticas
+                                </button>
+                            </div>
+                        </>
                     )}
-                  
+
                     {user?.role === 'admin' && (
-                    <button className={styles.menuItem} onClick={() => handleNavigation('mortgage')}>
-                        <FiBarChart size={16} className={styles.icon} />
-                        Amortización Hipoteca
-                    </button>
+                        <button className={styles.menuItem} onClick={() => handleNavigation('calculadora')}>
+                            <i className="bi bi-calculator-fill"></i>
+                            Interés Compuesto
+                        </button>
+                    )}
+
+                    {user?.role === 'admin' && (
+                        <button className={styles.menuItem} onClick={() => handleNavigation('mortgage')}>
+                            <i className="bi bi-graph-up"></i>
+                            Amortización Hipoteca
+                        </button>
                     )}
 
                     {/* Divisor */}
                     {user && (
                         <div className={styles.menuDivider}></div>
-                    )}  
+                    )}
 
                     {/* Sección de Configuración */}
                     <button
@@ -76,11 +103,11 @@ const handleNavigation = (tab) => {
                     >
                         {theme === 'light' ? (
                             <>
-                                <FiMoon size={16} className={styles.icon} /> Modo Oscuro
+                                <i className="bi bi-moon-fill"></i> Modo Oscuro
                             </>
                         ) : (
                             <>
-                                <FiSun size={16} className={styles.icon} /> Modo Claro
+                                <i className="bi bi-sun-fill"></i> Modo Claro
                             </>
                         )}
                     </button>
@@ -90,7 +117,7 @@ const handleNavigation = (tab) => {
                             logout();
                             setIsOpen(false);
                         }}>
-                            <FiLogOut className={styles.icon} />
+                            <i className="bi bi-box-arrow-right"></i>
                             Cerrar Sesión
                         </button>
                     )}
