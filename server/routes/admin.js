@@ -41,6 +41,7 @@ router.get('/users', verifyToken, isAdmin, async (req, res) => {
     const query = `
       SELECT 
         id,
+        username,
         email,
         is_approved AS "isApproved",
         role,
