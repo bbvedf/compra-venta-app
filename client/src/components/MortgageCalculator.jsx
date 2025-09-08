@@ -1,12 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toPng } from 'html-to-image';
 import styles from './MortgageCalculator.module.css';
-import { FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import html2pdf from 'html2pdf.js';
 import ExcelJS from 'exceljs';
 import toast from 'react-hot-toast';
-import { FaRegFilePdf, FaRegFileExcel } from 'react-icons/fa6';
-import { MdOutlineAttachEmail } from 'react-icons/md';
 import {
     ResponsiveContainer,
     LineChart,
@@ -18,7 +15,6 @@ import {
     CartesianGrid,
 } from "recharts";
 
-
 const MortgageCalculator = () => {
     const [principal, setPrincipal] = useState('');
     const [interestRate, setInterestRate] = useState('');
@@ -26,11 +22,23 @@ const MortgageCalculator = () => {
     const [paymentsPerYear, setPaymentsPerYear] = useState(12);
     const [extraPayment, setExtraPayment] = useState('');
     const [extraPaymentFrequency, setExtraPaymentFrequency] = useState('monthly');
+    const [showExportMenu, setShowExportMenu] = useState(false);
 
     const [monthlyPayment, setMonthlyPayment] = useState(null);
     const [amortizationTable, setAmortizationTable] = useState([]);
     const [chartDataUrl, setChartDataUrl] = useState('');
     const chartRef = useRef(null);
+
+    // Cerrar menú al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest(`.${styles.exportContainer}`)) {
+                setShowExportMenu(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         if (chartRef.current) {
@@ -39,6 +47,8 @@ const MortgageCalculator = () => {
                 .catch((err) => console.error('Error capturando gráfico:', err));
         }
     }, [amortizationTable]);
+
+    const toggleExportMenu = () => setShowExportMenu(!showExportMenu);
 
     const handleCalculate = async () => {
         const P = parseFloat(principal);
@@ -89,10 +99,9 @@ const MortgageCalculator = () => {
             }
         }, 0);
 
-        return mortgageData; // para usarlo en el render
+        return mortgageData;
     };
 
-    //Referencia para exportar a PDF
     const pdfRef = useRef();
 
     const handleExportPDF = () => {
@@ -101,7 +110,6 @@ const MortgageCalculator = () => {
         const body = document.body;
         const wasDark = body.classList.contains("theme-dark");
 
-        // Overlay que tapa todo
         const overlay = document.createElement("div");
         overlay.style.position = "fixed";
         overlay.style.top = 0;
@@ -112,7 +120,6 @@ const MortgageCalculator = () => {
         overlay.style.zIndex = 9999;
         document.body.appendChild(overlay);
 
-        // Forzamos tema light temporal
         body.classList.remove("theme-dark");
         body.classList.add("theme-light");
 
@@ -136,10 +143,6 @@ const MortgageCalculator = () => {
             });
     };
 
-
-
-
-
     const handleExportExcel = async () => {
         const wb = new ExcelJS.Workbook();
         const ws = wb.addWorksheet('Reporte Hipoteca');
@@ -152,7 +155,6 @@ const MortgageCalculator = () => {
 
         let rowIndex = 1;
 
-        // --- Inputs ---
         ws.mergeCells(`A${rowIndex}:B${rowIndex}`);
         ws.getCell(`A${rowIndex}`).value = 'Datos de entrada';
         ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
@@ -176,7 +178,6 @@ const MortgageCalculator = () => {
 
         rowIndex++;
 
-        // --- Resultados ---
         ws.mergeCells(`A${rowIndex}:B${rowIndex}`);
         ws.getCell(`A${rowIndex}`).value = 'Resultados';
         ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
@@ -202,7 +203,6 @@ const MortgageCalculator = () => {
 
         rowIndex++;
 
-        // --- Tabla de amortización ---
         ws.mergeCells(`A${rowIndex}:E${rowIndex}`);
         ws.getCell(`A${rowIndex}`).value = 'Tabla de amortización';
         ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
@@ -237,14 +237,12 @@ const MortgageCalculator = () => {
             rowIndex++;
         });
 
-        // --- Gráfico ---
         rowIndex++;
         ws.mergeCells(`A${rowIndex}:E${rowIndex}`);
         ws.getCell(`A${rowIndex}`).value = 'Gráfico';
         ws.getCell(`A${rowIndex}`).style = sectionTitleStyle;
         rowIndex++;
 
-        // Generamos el PNG justo aquí
         if (chartRef.current) {
             try {
                 const dataUrl = await toPng(chartRef.current, { backgroundColor: '#ffffff' });
@@ -252,9 +250,8 @@ const MortgageCalculator = () => {
                     base64: dataUrl,
                     extension: 'png',
                 });
-                // Ajustamos la altura para que la imagen no aparezca en blanco
                 const startRow = rowIndex;
-                const endRow = rowIndex + 14; // 14 filas de alto aprox.
+                const endRow = rowIndex + 14;
                 ws.addImage(imageId, `A${startRow}:E${endRow}`);
                 rowIndex = endRow + 1;
             } catch (err) {
@@ -262,10 +259,13 @@ const MortgageCalculator = () => {
             }
         }
 
-        ws.columns.forEach(col => {
-            col.width = 18;
-        });
-
+        ws.columns = [
+            { key: 'A', width: 25 },  // ← Columna A más ancha
+            { key: 'B', width: 18 },
+            { key: 'C', width: 18 },
+            { key: 'D', width: 18 },
+            { key: 'E', width: 18 }
+        ];
 
         wb.xlsx.writeBuffer().then(buffer => {
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -278,11 +278,6 @@ const MortgageCalculator = () => {
         });
     };
 
-
-
-
-
-
     const handleSendEmail = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -291,9 +286,6 @@ const MortgageCalculator = () => {
                 return;
             }
 
-            console.log(amortizationTable[0])
-
-            // --- Prepara tabla en el formato esperado por el backend/email ---
             const tablePayload = amortizationTable.map(row => ({
                 period: row.period,
                 payment: row.payment.toFixed(2),
@@ -302,19 +294,17 @@ const MortgageCalculator = () => {
                 balance: row.balance.toFixed(2)
             }));
 
-            // --- Prepara payload ---
             const payload = {
-                principal,               // número
-                interestRate,            // número
+                principal,
+                interestRate,
                 years,
                 paymentsPerYear,
                 extraPayment,
                 extraPaymentFrequency,
                 monthlyPayment,
-                table: tablePayload,     // tabla en formato correcto
+                table: tablePayload,
             };
 
-            // --- Genera data URL del gráfico si existe ---
             if (chartRef.current) {
                 try {
                     const dataUrl = await toPng(chartRef.current, {
@@ -322,14 +312,12 @@ const MortgageCalculator = () => {
                         skipFonts: true,
                         style: { fontFamily: 'Arial, sans-serif' }
                     });
-                    console.log('PNG size before send:', dataUrl.length);
                     payload.chartDataUrl = dataUrl;
                 } catch (err) {
                     console.error('Error generando data URL del gráfico:', err);
                 }
             }
 
-            // --- Llamada al backend ---
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-mortgage`, {
                 method: 'POST',
                 headers: {
@@ -353,13 +341,9 @@ const MortgageCalculator = () => {
         }
     };
 
-
-
     return (
         <div className={styles.container}>
-            {/* Sección que irá al PDF */}
             <div ref={pdfRef}>
-
                 <h2 className={styles.title}>Calculadora de Hipoteca</h2>
 
                 <div className={styles.inputGrid}>
@@ -431,8 +415,6 @@ const MortgageCalculator = () => {
                 {monthlyPayment && (
                     <div style={{ marginTop: '20px' }}>
                         <h3>Resultados</h3>
-
-
                         {amortizationTable.length > 0 && (() => {
                             const totalInterest = amortizationTable.reduce((sum, row) => sum + row.interestPayment, 0);
                             const totalPaid = amortizationTable.reduce((sum, row) => sum + row.payment, 0);
@@ -455,8 +437,6 @@ const MortgageCalculator = () => {
                 {amortizationTable.length > 0 && (
                     <>
                         <h3>Gráfico</h3>
-
-                        {/* Gráfico */}
                         <div ref={chartRef} className={styles.chartContainer}>
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart data={amortizationTable.map(row => ({
@@ -476,9 +456,7 @@ const MortgageCalculator = () => {
                             </ResponsiveContainer>
                         </div>
 
-
                         <h3>Resumen anual</h3>
-
                         <table border="1" cellPadding="5" style={{ borderCollapse: "collapse", width: "100%" }}>
                             <thead>
                                 <tr>
@@ -491,10 +469,7 @@ const MortgageCalculator = () => {
                             </thead>
                             <tbody>
                                 {amortizationTable.map((row, idx) => (
-                                    <tr
-                                        key={idx}
-
-                                    >
+                                    <tr key={idx}>
                                         <td>{row.period}</td>
                                         <td>{row.payment.toFixed(2)}</td>
                                         <td>{row.principalPayment.toFixed(2)}</td>
@@ -504,12 +479,10 @@ const MortgageCalculator = () => {
                                 ))}
                             </tbody>
                         </table>
-
                     </>
                 )}
             </div>
 
-            {/* Botones flotantes de scroll */}
             {amortizationTable.length > 0 && (
                 <div className={styles.scrollButtonContainer}>
                     <button
@@ -517,7 +490,7 @@ const MortgageCalculator = () => {
                         className={styles.scrollButton}
                         title="Ir al inicio"
                     >
-                        <FiArrowUp size={22} />
+                        <i class="bi bi-chevron-up"></i>
                     </button>
 
                     <button
@@ -525,30 +498,35 @@ const MortgageCalculator = () => {
                         className={styles.scrollButton}
                         title="Ir al final"
                     >
-                        <FiArrowDown size={22} />
+                        <i class="bi bi-chevron-down"></i>
                     </button>
                 </div>
             )}
 
-            {/* Botones de exportación fuera del PDF */}
-            {
-                amortizationTable.length > 0 && (
-                    <div className={styles.exportButtonsContainer}>
-                        <button onClick={handleExportPDF} className={`${styles.exportButton} ${styles.pdfButton}`}>
-                            <FaRegFilePdf className={styles.buttonIcon} /> Exportar PDF
-                        </button>
+            {amortizationTable.length > 0 && (
+                <div className={styles.exportContainer}>
+                    <br></br>
+                    <button className={styles.exportButton} onClick={toggleExportMenu}>
+                        <i className={`bi ${showExportMenu ? 'bi-x' : 'bi-box-arrow-up'}`}></i>
+                        {showExportMenu ? 'Cancelar' : 'Exportar'}
+                    </button>
 
-                        <button onClick={handleExportExcel} className={`${styles.exportButton} ${styles.excelButton}`}>
-                            <FaRegFileExcel className={styles.buttonIcon} /> Exportar Excel
-                        </button>
-
-                        <button onClick={handleSendEmail} className={`${styles.exportButton} ${styles.emailButton}`}>
-                            <MdOutlineAttachEmail className={styles.buttonIcon} /> Enviar por Email
-                        </button>
-                    </div>
-                )
-            }
-        </div >
+                    {showExportMenu && (
+                        <div className={styles.exportMenu}>
+                            <button onClick={handleExportPDF}>
+                                <i className="bi bi-file-earmark-pdf"></i> PDF
+                            </button>
+                            <button onClick={handleExportExcel}>
+                                <i className="bi bi-file-earmark-excel"></i> Excel
+                            </button>
+                            <button onClick={handleSendEmail}>
+                                <i className="bi bi-envelope"></i> Email
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
     );
 };
 

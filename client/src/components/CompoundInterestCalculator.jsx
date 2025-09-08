@@ -1,11 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import html2pdf from 'html2pdf.js';
 import ExcelJS from 'exceljs';
 import { toPng } from 'html-to-image';
 import toast from 'react-hot-toast';
-import { FaRegFilePdf, FaRegFileExcel } from 'react-icons/fa6';
-import { MdOutlineAttachEmail } from 'react-icons/md';
-import { FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import {
     LineChart,
     Line,
@@ -20,6 +17,21 @@ import styles from './CompoundInterestCalculator.module.css';
 
 const CompoundInterestCalculator = () => {
     const pdfRef = useRef();
+    const chartRef = useRef();
+    const [showExportMenu, setShowExportMenu] = useState(false);
+
+    // Cerrar menú al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest(`.${styles.exportContainer}`)) {
+                setShowExportMenu(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
+    const toggleExportMenu = () => setShowExportMenu(!showExportMenu);
 
     const handleExportPDF = () => {
         if (!pdfRef.current) return;
@@ -27,7 +39,6 @@ const CompoundInterestCalculator = () => {
         const body = document.body;
         const wasDark = body.classList.contains("theme-dark");
 
-        // Overlay que tapa todo para el blink agradable
         const overlay = document.createElement("div");
         overlay.style.position = "fixed";
         overlay.style.top = 0;
@@ -38,7 +49,6 @@ const CompoundInterestCalculator = () => {
         overlay.style.zIndex = 9999;
         document.body.appendChild(overlay);
 
-        // Forzamos tema light temporal
         body.classList.remove("theme-dark");
         body.classList.add("theme-light");
 
@@ -58,16 +68,12 @@ const CompoundInterestCalculator = () => {
             .set(opt)
             .save()
             .then(() => {
-                // Restauramos tema y limpiamos DOM temporal
                 body.classList.remove("theme-light");
                 if (wasDark) body.classList.add("theme-dark");
                 document.body.removeChild(clone);
                 document.body.removeChild(overlay);
             });
     };
-
-
-    const chartRef = useRef(); // Referencia al contenedor del gráfico
 
     const handleExportExcel = async () => {
         const wb = new ExcelJS.Workbook();
@@ -104,7 +110,7 @@ const CompoundInterestCalculator = () => {
             rowIndex++;
         });
 
-        rowIndex++; // espacio
+        rowIndex++;
 
         // --- Resultados ---
         ws.mergeCells(`A${rowIndex}:B${rowIndex}`);
@@ -126,7 +132,7 @@ const CompoundInterestCalculator = () => {
             rowIndex++;
         });
 
-        rowIndex++; // espacio
+        rowIndex++;
 
         // --- Tabla de evolución ---
         ws.mergeCells(`A${rowIndex}:E${rowIndex}`);
@@ -156,7 +162,7 @@ const CompoundInterestCalculator = () => {
             rowIndex++;
         });
 
-        rowIndex++; // espacio antes del gráfico
+        rowIndex++;
 
         // --- Gráfico ---
         ws.mergeCells(`A${rowIndex}:E${rowIndex}`);
@@ -178,8 +184,16 @@ const CompoundInterestCalculator = () => {
             console.error('Error generando gráfico:', err);
         }
 
-        ws.columns.forEach(col => {
-            col.width = 18;
+        // Autoajuste de columnas
+        ws.columns.forEach(column => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, cell => {
+                const length = cell.value ? cell.value.toString().length : 10;
+                if (length > maxLength) {
+                    maxLength = length;
+                }
+            });
+            column.width = Math.min(maxLength + 2, 30);
         });
 
         wb.xlsx.writeBuffer().then(buffer => {
@@ -201,7 +215,6 @@ const CompoundInterestCalculator = () => {
                 return;
             }
 
-            // --- Prepara tabla ---
             const tablePayload = tableData.map(row => ({
                 year: row.year,
                 balance: row.balance,
@@ -222,7 +235,6 @@ const CompoundInterestCalculator = () => {
                 tableData: tablePayload,
             };
 
-            // --- Genera data URL del gráfico si existe ---
             if (chartRef.current) {
                 try {
                     const dataUrl = await toPng(chartRef.current, {
@@ -230,14 +242,12 @@ const CompoundInterestCalculator = () => {
                         skipFonts: true,
                         style: { fontFamily: 'Arial, sans-serif' }
                     });
-                    console.log('PNG size before send:', dataUrl.length);
                     payload.chartDataUrl = dataUrl;
                 } catch (err) {
                     console.error('Error generando data URL del gráfico:', err);
                 }
             }
 
-            // --- Llamada al backend ---
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-calculation`, {
                 method: 'POST',
                 headers: {
@@ -299,7 +309,6 @@ const CompoundInterestCalculator = () => {
             }
         }
 
-        // --- Actualiza estados ---
         const finalValue = parseFloat(balance.toFixed(2));
         const netGain = parseFloat((finalValue - capital - periodicValue * years).toFixed(2));
         const realValue = parseFloat((finalValue / Math.pow(1 + infl, years)).toFixed(2));
@@ -310,7 +319,6 @@ const CompoundInterestCalculator = () => {
 
     return (
         <div className={styles.container}>
-            {/* Sección que irá al PDF */}
             <div ref={pdfRef}>
                 <h2 className={styles.title}>Calculadora de Interés Compuesto</h2>
 
@@ -450,7 +458,7 @@ const CompoundInterestCalculator = () => {
                         className={styles.scrollButton}
                         title="Ir al inicio"
                     >
-                        <FiArrowUp size={22} />
+                        <i className="bi bi-chevron-up"></i>
                     </button>
 
                     <button
@@ -458,35 +466,35 @@ const CompoundInterestCalculator = () => {
                         className={styles.scrollButton}
                         title="Ir al final"
                     >
-                        <FiArrowDown size={22} />
+                        <i className="bi bi-chevron-down"></i>
                     </button>
                 </div>
             )}
 
-            {/* Botones de exportación fuera del PDF */}
+            {/* Botón de exportación con dropdown */}
             {tableData.length > 0 && (
-                <div className={styles.exportButtonsContainer}>
-                    <button onClick={handleExportPDF} className={`${styles.exportButton} ${styles.pdfButton}`}>
-                        <FaRegFilePdf className={styles.buttonIcon} /> Exportar PDF
+                <div className={styles.exportContainer} style={{ marginTop: '2rem' }}>
+                    <button className={styles.exportButton} onClick={toggleExportMenu}>
+                        <i className={`bi ${showExportMenu ? 'bi-x' : 'bi-box-arrow-up'}`}></i>
+                        {showExportMenu ? 'Cancelar' : 'Exportar'}
                     </button>
 
-                    <button onClick={handleExportExcel} className={`${styles.exportButton} ${styles.excelButton}`}>
-                        <FaRegFileExcel className={styles.buttonIcon} /> Exportar Excel
-                    </button>
-
-                    <button onClick={handleSendEmail} className={`${styles.exportButton} ${styles.emailButton}`}>
-                        <MdOutlineAttachEmail className={styles.buttonIcon} /> Enviar por Email
-                    </button>
+                    {showExportMenu && (
+                        <div className={styles.exportMenu}>
+                            <button onClick={handleExportPDF}>
+                                <i className="bi bi-file-earmark-pdf"></i> PDF
+                            </button>
+                            <button onClick={handleExportExcel}>
+                                <i className="bi bi-file-earmark-spreadsheet"></i> Excel
+                            </button>
+                            <button onClick={handleSendEmail}>
+                                <i className="bi bi-envelope"></i> Email
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
-
-
-
-
-
-
-
     );
 };
 

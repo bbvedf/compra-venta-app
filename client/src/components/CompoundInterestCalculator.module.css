@@ -88,17 +88,14 @@
   background-color: var(--color-button-bg-hover);
 }
 
-.exportButtonsContainer {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin: 2.5rem 0;
-  flex-wrap: wrap;
+/* Agregar al CompoundInterestCalculator.module.css */
+.exportContainer {
+  position: relative;
+  display: inline-block;
 }
 
 .exportButton {
   padding: 0.8rem 1.5rem;
-  color: white;
   border: none;
   border-radius: 6px;
   font-size: 1rem;
@@ -109,71 +106,42 @@
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   font-weight: 500;
+  background-color: var(--color-button-bg, rgba(0,0,0,0.7));
+  color: var(--color-button-text, #fff);
 }
 
 .exportButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  background-color: var(--color-button-bg-hover);
 }
 
-.exportButton:active {
-  transform: translateY(1px);
-}
-
-.exportButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.buttonIcon {
-  font-size: 1.2rem;
-}
-
-/* Botón PDF - Rojo */
-.pdfButton {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-}
-
-.pdfButton:hover {
-  background: linear-gradient(135deg, #c0392b, #e74c3c);
-}
-
-/* Botón Excel - Verde */
-.excelButton {
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
-}
-
-.excelButton:hover {
-  background: linear-gradient(135deg, #27ae60, #2ecc71);
-}
-
-/* Botón Email - Azul/Índigo */
-.emailButton {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-}
-
-.emailButton:hover {
-  background: linear-gradient(135deg, #2980b9, #3498db);
-}
-
-/* Efecto de tooltip para botón deshabilitado */
-.emailButton:disabled::after {
-  content: "Requiere autenticación";
+.exportMenu {
   position: absolute;
-  top: -40px;
-  background: #333;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
+  bottom: 0;
+  left: 100%;
+  background: var(--color-card-bg, #fff);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  min-width: 150px;
 }
 
-.emailButton:disabled:hover::after {
-  opacity: 1;
+.exportMenu button {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text, #333);
+}
+
+.exportMenu button:hover {
+  background: var(--color-hover-bg, #f5f5f5);
 }
 
 .scrollButtonContainer {
