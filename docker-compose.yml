@@ -41,8 +41,7 @@ services:
     volumes:
       - ./server:/app
       - ./logs/backend:/logs/backend
-      - /app/node_modules # Este volumen anónimo evita que se sobrescriba
-    #command: npm start
+    command: npm start
     networks:
       - monitoring_net
       - shared_net
@@ -56,7 +55,7 @@ services:
       - .env
     volumes:
       - ./client:/app
-    #command: npm start
+    command: npm start
     networks:
       - monitoring_net
       - shared_net

@@ -1,15 +1,13 @@
 # client/Dockerfile
-FROM node:20
-
-RUN npm install -g pnpm
+FROM node:18
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN pnpm install
+RUN npm install
 
 COPY . .
 
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]
