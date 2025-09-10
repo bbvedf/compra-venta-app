@@ -1,9 +1,0 @@
-//No estoy seguro de si este archivo es necesario, pero lo dejo por si acaso.
-//Si todo funciona bien, eliminar este archivo pero no el paquete. 
-//Hay mucha cosa implicada en npm list debug: ESlint, jest, supertest, etc.
-
-// server/debug.js
-const logger = require('./utils/logger');
-const express = require('express');
-logger.info('Versión de Express:', express.version);
-logger.info('Router:', express.Router.toString());
