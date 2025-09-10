@@ -74,11 +74,11 @@ describe('Admin Routes', () => {
         .fn()
         .mockResolvedValueOnce({ rows: [{ email: 'a@b.com', is_approved: true }] })
         .mockResolvedValueOnce({ rows: [{}] });
-      
+
       const res = await request(testApp)
         .patch('/api/admin/users/1')
         .send({ isApproved: false, role: 'basic' });
-      
+
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
       expect(emailSender.sendUserRejectedEmail).toHaveBeenCalledWith('a@b.com');
