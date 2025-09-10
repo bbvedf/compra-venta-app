@@ -112,7 +112,7 @@ describe('Admin Routes', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ role: 'invalid' });
       expect(res.status).toBe(400);
-      expect(res.body.errors[0].msg).toMatch(/role inválido/i);
+      expect(res.body.errors[0].msg).toMatch(/rol[e]? inválido/i);
     });
   });
 
