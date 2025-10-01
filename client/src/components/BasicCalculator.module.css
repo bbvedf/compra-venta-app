@@ -1,0 +1,164 @@
+.calculatorPage {
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.calculatorHeader {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.calculatorHeader h2 {
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.calculatorHeader p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.calculatorContainer {
+  /*flex: 1;*/
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.calculator {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 300px;
+}
+
+.calculatorDisplay {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 24px;
+  text-align: right;
+  margin-bottom: 15px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  word-break: break-all;
+  font-family: monospace;
+}
+
+.calculatorButtons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.calculatorButtons button {
+  padding: 15px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.calculatorButtons button:active {
+  transform: scale(0.95);
+}
+
+.btnNumber {
+  background: var(--button-bg);
+  color: var(--text-primary);
+}
+
+.btnNumber:hover {
+  background: var(--button-hover);
+}
+
+.btnOperation {
+  background: var(--primary-color);
+  color: var(--button-text);
+}
+
+.btnOperation:hover {
+  background: var(--primary-dark);
+  opacity: 0.9;
+}
+
+.btnClear {
+  background: #dc3545;
+  /*color: var(--button-text);*/
+}
+
+.btnClear:hover {
+  background: #c82333;
+}
+
+.btnEquals {
+  background: #28a745;
+  /*color: var(--button-text);*/
+}
+
+.btnEquals:hover {
+  background: #218838;
+}
+
+.btnZero {
+  grid-column: span 2;
+  background: var(--button-bg);
+  color: var(--text-primary);
+}
+
+.calculatorFooter {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.backButton {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 40%; /* ← quizás esta propiedad falta */
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: var(--color-button-bg-hover);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .calculatorPage {
+    padding: 15px;
+  }
+  
+  .calculator {
+    padding: 15px;
+  }
+  
+  .calculatorDisplay {
+    font-size: 20px;
+    padding: 12px;
+    min-height: 50px;
+  }
+  
+  .calculatorButtons button {
+    padding: 12px;
+    font-size: 16px;
+  }
+}

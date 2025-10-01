@@ -88,6 +88,13 @@ const ThemeMenu = ({ theme, setTheme }) => {
                         </button>
                     )}
 
+                    {user?.role === 'admin' && (
+                    <button className={styles.menuItem} onClick={() => handleNavigation('basic-calculator')}>
+                        <i class="bi bi-percent"></i>
+                        Calculadora Básica
+                    </button>
+                    )}
+
                     {/* Divisor */}
                     {user && (
                         <div className={styles.menuDivider}></div>
