@@ -88,6 +88,12 @@ Dominio configurado: https://ryzenpc.mooo.com
 
 ---
 
+## 🚀 Aplicaciones Integradas
+
+- **Compras-Ventas**: `/` (React + Node.js)
+- **Finanzas**: `/finanzas/` (Angular + FastAPI)  
+- **Contactos**: `/contactos/` (Laravel + Livewire)
+
 
 ## 📝 Próximas Mejoras  
 - Integración con otras aplicaciones con tecnologías diferentes.

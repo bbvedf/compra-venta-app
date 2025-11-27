@@ -100,6 +100,18 @@ const ThemeMenu = ({ theme, setTheme }) => {
                         <div className={styles.menuDivider}></div>
                     )}
 
+                    {/* Enlace externo a Contactos */}
+                    <li>
+                    <a href="https://ryzenpc.mooo.com/contactos" class="nav-link">
+                        <i class="bi bi-person-lines-fill"></i> Contactos
+                    </a>
+                    </li>
+
+                    {/* Divisor */}
+                    {user && (
+                        <div className={styles.menuDivider}></div>
+                    )}
+
                     {/* Sección de Configuración */}
                     <button
                         className={styles.menuItem}
