@@ -16,7 +16,6 @@ import ThemeMenu from './components/ThemeMenu';
 import './index.css';
 import { Toaster } from 'react-hot-toast';
 
-
 function App() {
   const { isLoggedIn } = useContext(AuthContext);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');

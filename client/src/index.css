@@ -93,3 +93,27 @@ small,
 .text-muted {
   color: var(--color-muted);
 }
+
+.theme-menu-container { position: relative; }
+.hamburger-button {
+  background: none; border: none; cursor: pointer; padding: 8px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hamburger-button span {
+  display: block; width: 25px; height: 3px;
+  background: var(--text-color, #333); border-radius: 2px;
+  transition: background 0.3s;
+}
+.menu-dropdown {
+  position: absolute; right: 0; top: 100%;
+  background: var(--bg-color, white); border: 1px solid #ddd;
+  border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  min-width: 220px; z-index: 1000; padding: 8px 0;
+}
+.menu-title { padding: 8px 16px; font-weight: 600; font-size: 13px; color: #555; }
+.menu-divider { height: 1px; background: #eee; margin: 6px 0; }
+.menu-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; cursor: pointer; color: var(--text-color, #333);
+}
+.menu-item:hover { background: #f5f5f5; }

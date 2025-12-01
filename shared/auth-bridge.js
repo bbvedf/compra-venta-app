@@ -67,11 +67,15 @@ class AuthBridge {
     navigateTo(app, path = '') {
         const routes = {
             'compra-venta': '/',
-            'finanzas': '/finanzas/'
+            'finanzas': '/finanzas/',
+            'contactos': '/contactos/'
         };
         
         if (routes[app]) {
-            window.location.href = routes[app] + path;
+            // Pasar token via URL para Contactos
+            const token = this.getToken();
+            const url = token ? `${routes[app]}?token=${encodeURIComponent(token)}` : routes[app];
+            window.location.href = url;
         }
     }
 

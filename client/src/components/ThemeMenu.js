@@ -100,12 +100,20 @@ const ThemeMenu = ({ theme, setTheme }) => {
                         <div className={styles.menuDivider}></div>
                     )}
 
-                    {/* Enlace externo a Contactos */}
-                    <li>
-                    <a href="https://ryzenpc.mooo.com/contactos" class="nav-link">
-                        <i class="bi bi-person-lines-fill"></i> Contactos
-                    </a>
-                    </li>
+                    {/* Enlace externo a Contactos con token */}
+                    <button 
+                    className={styles.menuItem} 
+                    onClick={() => {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                        window.location.href = `https://ryzenpc.mooo.com/contactos/?token=${token}`;
+                        } else {
+                        window.location.href = 'https://ryzenpc.mooo.com/contactos/';
+                        }
+                    }}
+                    >
+                    <i className="bi bi-person-lines-fill"></i> Contactos
+                    </button>
 
                     {/* Divisor */}
                     {user && (

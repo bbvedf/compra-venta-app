@@ -3,7 +3,6 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './Dashboard.module.css';
 import { API_BASE_URL } from '../config';
-import ThemeMenu from './ThemeMenu';
 import CompoundInterestCalculator from './CompoundInterestCalculator';
 import MortgageCalculator from './MortgageCalculator';
 import BasicCalculator from './BasicCalculator';
@@ -16,7 +15,6 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState('inicio');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
   // EFECTO ÚNICO para manejar TODOS los cambios de URL/state
   useEffect(() => {
@@ -60,12 +58,6 @@ function Dashboard() {
       window.history.replaceState({}, document.title);
     }
   }, [location, location.state, location.search, location.hash]);
-
-  useEffect(() => {
-    document.body.classList.remove('theme-light', 'theme-dark');
-    document.body.classList.add(`theme-${theme}`);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     if (!user) {
@@ -153,11 +145,6 @@ function Dashboard() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>Panel de Administración</h2>
-        <ThemeMenu
-          theme={theme}
-          setTheme={setTheme}
-          onLogout={logout}
-        />
         {showDeleteModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
