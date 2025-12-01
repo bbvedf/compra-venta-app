@@ -99,8 +99,9 @@ const ThemeMenu = ({ theme, setTheme }) => {
                     {user && (
                         <div className={styles.menuDivider}></div>
                     )}
-
+                    
                     {/* Enlace externo a Contactos con token */}
+                    {user?.role === 'admin' && (
                     <button 
                     className={styles.menuItem} 
                     onClick={() => {
@@ -114,7 +115,8 @@ const ThemeMenu = ({ theme, setTheme }) => {
                     >
                     <i className="bi bi-person-lines-fill"></i> Contactos
                     </button>
-
+                    )}
+                    
                     {/* Divisor */}
                     {user && (
                         <div className={styles.menuDivider}></div>
