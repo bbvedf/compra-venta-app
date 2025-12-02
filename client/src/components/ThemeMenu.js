@@ -96,7 +96,7 @@ const ThemeMenu = ({ theme, setTheme }) => {
                     )}
 
                     {/* Divisor */}
-                    {user && (
+                    {user?.role === 'admin' && (
                         <div className={styles.menuDivider}></div>
                     )}
                     
