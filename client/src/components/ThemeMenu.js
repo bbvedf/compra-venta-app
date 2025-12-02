@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './ThemeMenu.module.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-const ThemeMenu = ({ theme, setTheme }) => {
+const ThemeMenu = ({ theme, setTheme, setShowLogoutModal }) => {
     const { user, logout } = useContext(AuthContext);
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
@@ -143,7 +143,14 @@ const ThemeMenu = ({ theme, setTheme }) => {
 
                     {user && (
                         <button className={styles.menuItem} onClick={() => {
-                            logout();
+                            if (setShowLogoutModal) {
+                                setShowLogoutModal(true);  // ← Usar el modal "currado"
+                            } else {
+                                // Fallback por si acaso
+                                if (window.confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                                    logout();
+                                }
+                            }
                             setIsOpen(false);
                         }}>
                             <i className="bi bi-box-arrow-right"></i>

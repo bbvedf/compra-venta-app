@@ -1,9 +1,7 @@
-//Importaciones
 import { useContext, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import Header from './components/Header';
-//Componenetes
 import Login from './components/Login';
 import WelcomePage from './components/WelcomePage';
 import Register from './components/Register';
@@ -11,14 +9,15 @@ import Dashboard from './components/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import ResetPassword from './components/ResetPassword';
 import NewPassword from './components/NewPassword';
-//Estilos
 import ThemeMenu from './components/ThemeMenu';
 import './index.css';
 import { Toaster } from 'react-hot-toast';
+import styles from './components/Dashboard.module.css';
 
 function App() {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, logout } = useContext(AuthContext); // ← Añadir logout aquí
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // ← NUEVO ESTADO
 
   useEffect(() => {
     document.body.classList.remove('theme-light', 'theme-dark');
@@ -26,11 +25,50 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  const handleConfirmLogout = () => {
+    logout();
+    setShowLogoutModal(false);
+  };
+
   return (
     <>
       <Header theme={theme} />
+      
+      {/* Modal de logout a nivel de app */}
+      {showLogoutModal && (
+        <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+                <h3>
+                    <i className="bi bi-box-arrow-right text-primary me-2"></i>
+                    <span>  Confirmar Cierre de Sesión</span>
+                </h3>
+                <p>¿Estás seguro de que quieres cerrar sesión?</p>
+                <div className={styles.modalButtons}>
+                    <button 
+                        onClick={() => setShowLogoutModal(false)} 
+                        className={styles.cancelButton}
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        onClick={handleConfirmLogout} 
+                        className={styles.deleteButton}
+                    >
+                        <i className="bi bi-box-arrow-right me-1"></i>
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    )}
+      
       <div style={{ marginTop: '60px' }}>
-        <ThemeMenu theme={theme} setTheme={setTheme} />
+        {/* Pasar setShowLogoutModal a ThemeMenu */}
+        <ThemeMenu 
+          theme={theme} 
+          setTheme={setTheme}
+          setShowLogoutModal={setShowLogoutModal}  // ← ESTA LÍNEA ES CLAVE
+        />
         <Toaster position="top-center" reverseOrder={false} />
         <Routes>
           <Route path="/welcome" element={<WelcomePage />} />

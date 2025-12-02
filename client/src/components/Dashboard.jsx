@@ -15,6 +15,8 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState('inicio');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);  
 
   // EFECTO ÚNICO para manejar TODOS los cambios de URL/state
   useEffect(() => {
@@ -121,9 +123,6 @@ function Dashboard() {
     }
   };
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
-
   const handleDeleteClick = (user) => {
     setUserToDelete(user);
     setShowDeleteModal(true);
@@ -140,11 +139,12 @@ function Dashboard() {
       }
     }
   };
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>Panel de Administración</h2>
+        
+        {/* Modal de eliminación de usuario */}
         {showDeleteModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
@@ -156,7 +156,7 @@ function Dashboard() {
               </div>
             </div>
           </div>
-        )}
+        )}        
       </div>
 
       <div className={styles.tabContent}>
