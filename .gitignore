@@ -43,3 +43,5 @@ Thumbs.db
 # Notas/apuntes/Resumenes
 _notas.txt
 
+# Docker standalone
+docker-compose.bak.yml
