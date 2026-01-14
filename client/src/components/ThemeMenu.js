@@ -7,7 +7,16 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 const ThemeMenu = ({ theme, setTheme, setShowLogoutModal }) => {
     const { user, logout } = useContext(AuthContext);
     const [isOpen, setIsOpen] = useState(false);
+    const [openSubmenus, setOpenSubmenus] = useState({ finanzas: false, geo: false });
     const navigate = useNavigate();
+
+    const toggleSubmenu = (menu, e) => {
+        e.stopPropagation();
+        setOpenSubmenus(prev => ({
+            ...prev,
+            [menu]: !prev[menu]
+        }));
+    };
 
     const handleNavigation = (tab) => {
         navigate('/dashboard', {
@@ -31,98 +40,118 @@ const ThemeMenu = ({ theme, setTheme, setShowLogoutModal }) => {
 
             {isOpen && (
                 <div className={styles.menuDropdown}>
-                    {/* Sección de Navegación */}
-                    {user && (
-                        <button className={styles.menuItem} onClick={() => handleNavigation('inicio')}>
-                            <i className="bi bi-house-fill"></i>
-                            Inicio
-                        </button>
-                    )}
-                    {user?.role === 'admin' && (
-                        <button className={styles.menuItem} onClick={() => handleNavigation('configuracion')}>
-                            <i className="bi bi-people-fill"></i>
-                            Gestión de Usuarios
-                        </button>
-                    )}
-
-                    {user?.role === 'admin' && (
+                    {user && user.isApproved !== false ? (
                         <>
+                            {/* --- SECCIÓN: NAVEGACIÓN --- */}
+                            <div className={styles.sectionHeader}>Navegación</div>
+                            <button className={styles.menuItem} onClick={() => handleNavigation('inicio')}>
+                                <i className="bi bi-house-fill"></i>
+                                Dashboard Principal
+                            </button>
+                            {user?.role === 'admin' && (
+                                <button className={styles.menuItem} onClick={() => handleNavigation('configuracion')}>
+                                    <i className="bi bi-people-fill"></i>
+                                    Gestión de Usuarios
+                                </button>
+                            )}
+
                             <div className={styles.menuDivider}></div>
 
-                            {/* Submenú Finanzas */}
+                            {/* --- SECCIÓN: APLICACIONES --- */}
+                            <div className={styles.sectionHeader}>Aplicaciones</div>
+
+                            {/* Finanzas (Colapsable) */}
                             <div className={styles.submenu}>
-                                <div className={styles.submenuHeader}>
-                                    <i className="bi bi-wallet2"></i>
-                                    Finanzas
+                                <div className={styles.menuItemContainer}>
+                                    <div className={styles.menuItemHeader} onClick={(e) => toggleSubmenu('finanzas', e)}>
+                                        <i className="bi bi-wallet2 text-primary"></i>
+                                        <span>Finanzas Personales</span>
+                                    </div>
+                                    <button className={styles.submenuToggle} onClick={(e) => toggleSubmenu('finanzas', e)}>
+                                        <i className={`bi bi-chevron-${openSubmenus.finanzas ? 'up' : 'down'}`}></i>
+                                    </button>
                                 </div>
-
-                                <button className={styles.menuItem} onClick={() => window.location.href = '/finanzas/categories'}>
-                                    <i className="bi bi-folder-fill"></i>
-                                    Categorías
-                                </button>
-
-                                <button className={styles.menuItem} onClick={() => window.location.href = '/finanzas/transactions'}>
-                                    <i className="bi bi-credit-card-fill"></i>
-                                    Transacciones
-                                </button>
-
-                                <button className={styles.menuItem} onClick={() => window.location.href = '/finanzas/stats'}>
-                                    <i className="bi bi-bar-chart-fill"></i>
-                                    Estadísticas
-                                </button>
+                                {openSubmenus.finanzas && (
+                                    <div className={styles.submenuContent}>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/finanzas/categories'}>
+                                            <i className="bi bi-folder2-open"></i> Categorías
+                                        </button>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/finanzas/transactions'}>
+                                            <i className="bi bi-cash-stack"></i> Transacciones
+                                        </button>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/finanzas/stats'}>
+                                            <i className="bi bi-graph-up-arrow"></i> Estadísticas
+                                        </button>
+                                    </div>
+                                )}
                             </div>
+
+                            {/* Geo-Data (Colapsable) */}
+                            <div className={styles.submenu}>
+                                <div className={styles.menuItemContainer}>
+                                    <div className={styles.menuItemHeader} onClick={(e) => toggleSubmenu('geo', e)}>
+                                        <i className="bi bi-geo-alt-fill text-primary"></i>
+                                        <span>Geo-Data Analytics</span>
+                                    </div>
+                                    <button className={styles.submenuToggle} onClick={(e) => toggleSubmenu('geo', e)}>
+                                        <i className={`bi bi-chevron-${openSubmenus.geo ? 'up' : 'down'}`}></i>
+                                    </button>
+                                </div>
+                                {openSubmenus.geo && (
+                                    <div className={styles.submenuContent}>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/geo/'}>
+                                            <i className="bi bi-speedometer2"></i> Inicio
+                                        </button>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/geo/dataset/covid'}>
+                                            <i className="bi bi-virus"></i> COVID España
+                                        </button>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/geo/dataset/weather'}>
+                                            <i className="bi bi-cloud-sun-fill"></i> Clima España
+                                        </button>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/geo/dataset/elections'}>
+                                            <i className="bi bi-bar-chart-fill"></i> Resultados Electorales
+                                        </button>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/geo/dataset/airquality'}>
+                                            <i className="bi bi-wind"></i> Calidad del Aire
+                                        </button>
+                                        <button className={styles.menuSubItem} onClick={() => window.location.href = '/geo/dataset/housing'}>
+                                            <i className="bi bi-house-door-fill"></i> Precios Vivienda
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {user?.role === 'admin' && (
+                                <button className={styles.menuItem} onClick={() => window.location.href = '/tickets/'}>
+                                    <i className="bi bi-ticket-perforated-fill"></i> Sistema de Tickets
+                                </button>
+                            )}
+
+                            <button className={styles.menuItem} onClick={() => window.location.href = '/contactos/'}>
+                                <i className="bi bi-person-lines-fill"></i> Agenda de Contactos
+                            </button>
+
+                            <div className={styles.menuDivider}></div>
+
+                            {/* --- SECCIÓN: HERRAMIENTAS --- */}
+                            <div className={styles.sectionHeader}>Herramientas</div>
+                            <button className={styles.menuItem} onClick={() => handleNavigation('calculadora')}>
+                                <i className="bi bi-calculator-fill"></i> Interés Compuesto
+                            </button>
+                            <button className={styles.menuItem} onClick={() => handleNavigation('mortgage')}>
+                                <i className="bi bi-house-door-fill"></i> Hipoteca
+                            </button>
+                            <button className={styles.menuItem} onClick={() => handleNavigation('basic-calculator')}>
+                                <i className="bi bi-percent"></i> Calculadora Básica
+                            </button>
+
+                            <div className={styles.menuDivider}></div>
                         </>
+                    ) : (
+                        <div className={styles.sectionHeader}>Sistema</div>
                     )}
 
-                    {user?.role === 'admin' && (
-                        <button className={styles.menuItem} onClick={() => handleNavigation('calculadora')}>
-                            <i className="bi bi-calculator-fill"></i>
-                            Interés Compuesto
-                        </button>
-                    )}
-
-                    {user?.role === 'admin' && (
-                        <button className={styles.menuItem} onClick={() => handleNavigation('mortgage')}>
-                            <i className="bi bi-graph-up"></i>
-                            Amortización Hipoteca
-                        </button>
-                    )}
-
-                    {user?.role === 'admin' && (
-                    <button className={styles.menuItem} onClick={() => handleNavigation('basic-calculator')}>
-                        <i class="bi bi-percent"></i>
-                        Calculadora Básica
-                    </button>
-                    )}
-
-                    {/* Divisor */}
-                    {user?.role === 'admin' && (
-                        <div className={styles.menuDivider}></div>
-                    )}
-                    
-                    {/* Enlace externo a Contactos con token */}
-                    {user?.role === 'admin' && (
-                    <button 
-                    className={styles.menuItem} 
-                    onClick={() => {
-                        const token = localStorage.getItem('token');
-                        if (token) {
-                        window.location.href = `https://ryzenpc.mooo.com/contactos/?token=${token}`;
-                        } else {
-                        window.location.href = 'https://ryzenpc.mooo.com/contactos/';
-                        }
-                    }}
-                    >
-                    <i className="bi bi-person-lines-fill"></i> Contactos
-                    </button>
-                    )}
-                    
-                    {/* Divisor */}
-                    {user && (
-                        <div className={styles.menuDivider}></div>
-                    )}
-
-                    {/* Sección de Configuración */}
+                    {/* --- SECCIÓN: SISTEMA --- */}
                     <button
                         className={styles.menuItem}
                         onClick={() => {
@@ -132,7 +161,7 @@ const ThemeMenu = ({ theme, setTheme, setShowLogoutModal }) => {
                     >
                         {theme === 'light' ? (
                             <>
-                                <i className="bi bi-moon-fill"></i> Modo Oscuro
+                                <i className="bi bi-moon-stars-fill"></i> Modo Oscuro
                             </>
                         ) : (
                             <>
@@ -142,11 +171,10 @@ const ThemeMenu = ({ theme, setTheme, setShowLogoutModal }) => {
                     </button>
 
                     {user && (
-                        <button className={styles.menuItem} onClick={() => {
+                        <button className={`${styles.menuItem} ${styles.logoutItem}`} onClick={() => {
                             if (setShowLogoutModal) {
-                                setShowLogoutModal(true);  // ← Usar el modal "currado"
+                                setShowLogoutModal(true);
                             } else {
-                                // Fallback por si acaso
                                 if (window.confirm('¿Estás seguro de que quieres cerrar sesión?')) {
                                     logout();
                                 }
@@ -159,6 +187,7 @@ const ThemeMenu = ({ theme, setTheme, setShowLogoutModal }) => {
                     )}
                 </div>
             )}
+
         </div>
     );
 };

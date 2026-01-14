@@ -25,6 +25,17 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Sincronizar tema entre pestañas
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'theme' && e.newValue && e.newValue !== theme) {
+        setTheme(e.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [theme]);
+
   const handleConfirmLogout = () => {
     logout();
     setShowLogoutModal(false);
@@ -33,49 +44,49 @@ function App() {
   return (
     <>
       <Header theme={theme} />
-      
+
       {/* Modal de logout a nivel de app */}
       {showLogoutModal && (
         <div className={styles.modalOverlay}>
-            <div className={styles.modal}>
-                <h3>
-                    <i className="bi bi-box-arrow-right text-primary me-2"></i>
-                    <span>  Confirmar Cierre de Sesión</span>
-                </h3>
-                <p>¿Estás seguro de que quieres cerrar sesión?</p>
-                <div className={styles.modalButtons}>
-                    <button 
-                        onClick={() => setShowLogoutModal(false)} 
-                        className={styles.cancelButton}
-                    >
-                        Cancelar
-                    </button>
-                    <button 
-                        onClick={handleConfirmLogout} 
-                        className={styles.deleteButton}
-                    >
-                        <i className="bi bi-box-arrow-right me-1"></i>
-                        Cerrar Sesión
-                    </button>
-                </div>
+          <div className={styles.modal}>
+            <h3>
+              <i className="bi bi-box-arrow-right text-primary me-2"></i>
+              <span>  Confirmar Cierre de Sesión</span>
+            </h3>
+            <p>¿Estás seguro de que quieres cerrar sesión?</p>
+            <div className={styles.modalButtons}>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className={styles.cancelButton}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmLogout}
+                className={styles.deleteButton}
+              >
+                <i className="bi bi-box-arrow-right me-1"></i>
+                Cerrar Sesión
+              </button>
             </div>
+          </div>
         </div>
-    )}
-      
+      )}
+
       <div style={{ marginTop: '60px' }}>
         {/* Pasar setShowLogoutModal a ThemeMenu */}
-        <ThemeMenu 
-          theme={theme} 
+        <ThemeMenu
+          theme={theme}
           setTheme={setTheme}
           setShowLogoutModal={setShowLogoutModal}  // ← ESTA LÍNEA ES CLAVE
         />
         <Toaster position="top-center" reverseOrder={false} />
         <Routes>
           <Route path="/welcome" element={<WelcomePage />} />
-          <Route path="/login" element={!isLoggedIn ? <Login /> : <Navigate to="/dashboard" />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/new-password/:token" element={<NewPassword />} />
-          <Route path="/register" element={!isLoggedIn ? <Register /> : <Navigate to="/dashboard" />} />
+          <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
             element={

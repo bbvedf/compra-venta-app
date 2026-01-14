@@ -75,9 +75,11 @@ app.use(bannedIP);
  */
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
   message: 'Has superado el límite de peticiones, intenta más tarde.',
-  skip: (req) => req.path === '/metrics',
+  skip: (req) =>
+    req.path === '/metrics' ||
+    req.path.startsWith('/api/auth/verify'),
 });
 app.use(globalLimiter);
 

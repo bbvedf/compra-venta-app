@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth');
-const { verifyToken } = require('../middleware/authMiddleware');
+const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const { body, validationResult } = require('express-validator');
 
 /**
@@ -73,6 +73,16 @@ router.post(
   validate,
   authController.setNewPassword,
 );
+
+// Verificar token para Nginx SSO (cualquier usuario aprobado)
+router.get('/verify-sso', verifyToken, (req, res) => {
+  res.json(req.user);
+});
+
+// Verificar token admin para Nginx SSO
+router.get('/verify-admin', verifyToken, isAdmin, (req, res) => {
+  res.sendStatus(200);
+});
 
 // Verificar token
 router.get('/verify', verifyToken, (req, res) => {

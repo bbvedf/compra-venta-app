@@ -1,5 +1,6 @@
 // client/src/components/Login.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { GoogleLogin } from '@react-oauth/google';
@@ -11,11 +12,37 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const query = new URLSearchParams(window.location.search);
+  const from = query.get('from') || '/dashboard';
+  const { isLoggedIn, user } = useContext(AuthContext);
+
+  // Redirección automática si ya está logueado (caso verifyAuth exitoso con 'from')
+  useEffect(() => {
+    if (isLoggedIn && user?.isApproved && from !== '/dashboard') {
+      const externalApps = ['/tickets', '/geo', '/finanzas', '/contactos'];
+      const isExternal = externalApps.some(app => from.startsWith(app));
+
+      if (isExternal) {
+        // Evitar bucles: si acabamos de intentar redirigir a esta misma URL, paramos
+        const lastRedirect = sessionStorage.getItem('last_redirect');
+        if (lastRedirect === from) {
+          console.warn('🛑 Bucle de redirección detectado para:', from);
+          return;
+        }
+
+        console.log('🚀 Redirigiendo a app externa:', from);
+        sessionStorage.setItem('last_redirect', from);
+        window.location.href = from;
+      } else {
+        navigate(from, { replace: true });
+      }
+    }
+  }, [isLoggedIn, user, from, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('📤 Enviando datos de login:', form);
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
@@ -57,9 +84,21 @@ const Login = () => {
       console.log('✅ authService.login completado');
 
       // Redirigir según el estado de aprobación
-      const targetRoute = data.user?.isApproved ? '/dashboard' : '/welcome';
-      console.log('➡️ Navegando a:', targetRoute);
-      navigate(targetRoute, { replace: true });
+      if (data.user?.isApproved) {
+        // Si el 'from' es una app externa, usamos window.location.href
+        const externalApps = ['/tickets', '/geo', '/finanzas', '/contactos'];
+        const isExternal = externalApps.some(app => from.startsWith(app));
+
+        if (isExternal) {
+          console.log('🚀 Redirigiendo a app externa:', from);
+          window.location.href = from;
+        } else {
+          console.log('🏠 Redirigiendo a ruta interna:', from);
+          navigate(from, { replace: true });
+        }
+      } else {
+        navigate('/welcome', { replace: true });
+      }
 
     } catch (err) {
       console.error('❌ Error en login:', err.message);
@@ -75,7 +114,7 @@ const Login = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: credentialResponse.credential }),
       });
-      
+
       const data = await response.json();
       console.log('📥 Respuesta Google login:', data);
 
@@ -93,11 +132,21 @@ const Login = () => {
 
       // Usar AuthService para Google login
       await authService.login(data.token, null, data.user);
-      
+
       // Redirigir
-      const targetRoute = data.user?.isApproved ? '/dashboard' : '/welcome';
-      navigate(targetRoute, { replace: true });
-      
+      if (data.user?.isApproved) {
+        const externalApps = ['/tickets', '/geo', '/finanzas', '/contactos'];
+        const isExternal = externalApps.some(app => from.startsWith(app));
+
+        if (isExternal) {
+          window.location.href = from;
+        } else {
+          navigate(from, { replace: true });
+        }
+      } else {
+        navigate('/welcome', { replace: true });
+      }
+
     } catch (err) {
       console.error('❌ Error en Google login:', err);
       setError('Error al autenticar con Google: ' + err.message);

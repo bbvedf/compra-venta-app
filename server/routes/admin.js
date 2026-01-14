@@ -146,7 +146,6 @@ router.delete(
 router.post(
   '/send-calculation',
   verifyToken,
-  isAdmin,
   emailLimiter,
   [body('chartDataUrl').optional().isString()],
   validate,
@@ -170,7 +169,6 @@ router.post(
 router.post(
   '/send-mortgage',
   verifyToken,
-  isAdmin,
   emailLimiter,
   [body('chartDataUrl').optional().isString()],
   validate,

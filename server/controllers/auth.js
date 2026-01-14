@@ -107,6 +107,15 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user.rows[0]);
     console.log('Token generado:', token);
+
+    // Configurar cookie para SSO/Nginx
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'Strict',
+      maxAge: 3600000, // 1 hora
+    });
+
     await userLogger.logUserEvent(user.rows[0].id, eventTypes.LOGIN, { email });
 
     console.log('Enviando respuesta');
@@ -118,6 +127,7 @@ exports.login = async (req, res) => {
         email: user.rows[0].email,
         username: user.rows[0].username,
         role: user.rows[0].role,
+        isApproved: user.rows[0].isApproved,
       },
     });
   } catch (error) {
@@ -174,6 +184,15 @@ exports.googleLogin = async (req, res) => {
     }
 
     const jwtToken = generateToken(user);
+
+    // Configurar cookie para SSO/Nginx
+    res.cookie('auth_token', jwtToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'Strict',
+      maxAge: 3600000,
+    });
+
     await userLogger.logUserEvent(user.id, eventTypes.LOGIN_GOOGLE, { email });
 
     res.json({
@@ -184,6 +203,7 @@ exports.googleLogin = async (req, res) => {
         email: user.email,
         username: user.username,
         role: user.role,
+        isApproved: user.isApproved,
       },
     });
   } catch (error) {
@@ -196,6 +216,7 @@ exports.googleLogin = async (req, res) => {
 // Logout
 exports.logout = async (req, res) => {
   try {
+    res.clearCookie('auth_token');
     await userLogger.logUserEvent(req.user.id, eventTypes.LOGOUT, { email: req.user.email });
     res.json({ message: 'Sesión cerrada' });
   } catch (error) {

@@ -8,9 +8,9 @@ export const AuthContext = createContext({
   isLoggedIn: false,
   loading: true,
   error: null,
-  setError: () => {},
-  login: () => {},
-  logout: () => {},
+  setError: () => { },
+  login: () => { },
+  logout: () => { },
 });
 
 export const useAuth = () => {
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     const verifyAuth = async () => {
       const token = localStorage.getItem('token');
       console.log('🔍 AuthContext verificando token:', token ? 'SÍ' : 'NO');
-      
+
       if (!token) {
         setLoading(false);
         return;
@@ -66,8 +66,15 @@ export const AuthProvider = ({ children }) => {
           console.log('✅ Usuario verificado:', user);
           setUser(user);
           setIsLoggedIn(true);
-          
-          if (user?.isApproved) {
+
+          // Verificar si hay una redirección pendiente en la URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const from = urlParams.get('from');
+
+          if (from) {
+            console.log('⏳ Manteniendo ruta para redirección manual:', from);
+            // No hacemos navigate('/dashboard') si hay un 'from'
+          } else if (user?.isApproved) {
             navigate('/dashboard', { replace: true });
           } else {
             navigate('/welcome', { replace: true });
