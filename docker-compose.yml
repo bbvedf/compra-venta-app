@@ -82,6 +82,7 @@ services:
       - finanzas-backend
       - finanzas-frontend
       - contact-manager-webserver
+      - tickets-app
     networks:
       - monitoring_net
       - shared_net
@@ -248,8 +249,53 @@ services:
       - geo-network
     restart: unless-stopped
     command: sh -c "yarn build && tail -f /dev/null"
+  # ==========================================
+  # 🎫 TICKET SYSTEM (SPRING BOOT) SERVICIOS
+  # ==========================================
+  tickets-db:
+    image: postgres:16-alpine
+    container_name: tickets-db
+    environment:
+      POSTGRES_USER: ${TICKETS_DB_USER}
+      POSTGRES_PASSWORD: ${TICKETS_DB_PASSWORD}
+      POSTGRES_DB: ${TICKETS_DB_NAME}
+    volumes:
+      - tickets_dbdata:/var/lib/postgresql/data
+      - ../ticket-system/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - tickets-net
+      - shared_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TICKETS_DB_USER} -d tickets"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-
+  tickets-app:
+    build:
+      context: ../ticket-system
+      dockerfile: Dockerfile
+    container_name: tickets-app
+    environment:
+      - DB_URL=jdbc:postgresql://tickets-db:5432/${TICKETS_DB_NAME}
+      - DB_USER=${TICKETS_DB_USER}
+      - DB_PASSWORD=${TICKETS_DB_PASSWORD}
+      - APP_UPLOAD_DIR=/app/uploads
+      - SERVER_SERVLET_CONTEXT_PATH=/tickets
+    ports:
+      - "8082:8080"
+    volumes:
+      - ../ticket-system/src:/app/src
+      - ../ticket-system/uploads:/app/uploads
+      - ../ticket-system/logs:/app/logs
+    depends_on:
+      tickets-db:
+        condition: service_healthy
+    networks:
+      - tickets-net
+      - shared_net
+    restart: unless-stopped
 
   # ==========================================
   # 📊 MONITORING SERVICIOS
@@ -298,6 +344,9 @@ volumes:
   geo_dbdata:
     external: true
     name: geo-data_postgres_data
+  tickets_dbdata:
+    external: true
+    name: ticket-system_postgres_data
   geo_frontend_dist:
 
 networks:
@@ -308,4 +357,6 @@ networks:
   contact-manager-network:
     driver: bridge
   geo-network:
+    driver: bridge
+  tickets-net:
     driver: bridge
