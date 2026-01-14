@@ -75,6 +75,7 @@ services:
       - ./certbot-data/etc/letsencrypt:/etc/letsencrypt:ro
       - ./logs/nginx:/var/log/nginx
       - ./shared:/usr/share/nginx/html/shared:ro
+      - geo_frontend_dist:/usr/share/nginx/html/geo:ro
     depends_on:
       - backend
       - frontend
@@ -152,7 +153,6 @@ services:
         aliases:
           - app
       shared_net:
-
     extra_hosts:
       - "host.docker.internal:host-gateway"
   
@@ -192,6 +192,64 @@ services:
       contact-manager-network:
         aliases:
           - db
+
+  # ==========================================
+  # 🌍 GEO DATA SERVICIOS
+  # ==========================================
+  geo-db:
+    image: postgis/postgis:15-3.3
+    container_name: geo-data-db
+    environment:
+      POSTGRES_USER: ${GEO_DB_USER}
+      POSTGRES_PASSWORD: ${GEO_DB_PASSWORD}
+      POSTGRES_DB: ${GEO_DB_NAME}
+    volumes:
+      - geo_dbdata:/var/lib/postgresql/data
+      - ../geo-data/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5440:5432"
+    networks:
+      - geo-network
+      - shared_net
+    restart: unless-stopped
+
+  geo-backend:
+    build: 
+      context: ../geo-data/backend
+      dockerfile: Dockerfile
+    container_name: geo-data-api
+    environment:
+      DATABASE_URL: postgresql://${GEO_DB_USER}:${GEO_DB_PASSWORD}@geo-db:5432/${GEO_DB_NAME}
+      CORS_ORIGINS: http://localhost:8180,https://ryzenpc.mooo.com
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      PYTHON_ENV: production
+      OPENWEATHER_API_KEY: ${GEO_OPENWEATHER_API_KEY}
+    ports:
+      - "8100:8000"
+    networks:
+      - geo-network
+      - shared_net
+    depends_on:
+      - geo-db
+    restart: unless-stopped
+    command: gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+
+  geo-frontend:
+    build:
+      context: ../geo-data/frontend
+      dockerfile: Dockerfile
+    container_name: geo-data-web
+    environment:
+      - VITE_API_URL=/api/geo
+    volumes:
+      - geo_frontend_dist:/app/dist
+    networks:
+      - geo-network
+    restart: unless-stopped
+    command: sh -c "yarn build && tail -f /dev/null"
+
+
 
   # ==========================================
   # 📊 MONITORING SERVICIOS
@@ -237,6 +295,10 @@ volumes:
   contact_dbdata:
     external: true
     name: contact-manager-laravel_dbdata
+  geo_dbdata:
+    external: true
+    name: geo-data_postgres_data
+  geo_frontend_dist:
 
 networks:
   monitoring_net:
@@ -244,4 +306,6 @@ networks:
   shared_net:
     external: true
   contact-manager-network:
+    driver: bridge
+  geo-network:
     driver: bridge

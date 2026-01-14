@@ -44,4 +44,4 @@ Thumbs.db
 _notas.txt
 
 # Docker standalone
-docker-compose.bak.yml
+default.conf.bak
